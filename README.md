@@ -23,6 +23,7 @@ npm run dev          # http://localhost:3000
 
 1. [supabase.com](https://supabase.com) 에서 프로젝트를 만든다.
 2. SQL Editor 에 [`supabase/schema.sql`](supabase/schema.sql) 을 통째로 붙여넣고 실행한다.
+   그다음 `supabase/002_events.sql` · `003_notice.sql` · `004_project_edits.sql` 도 차례로 실행한다.
 3. `.env.local` 을 만들고 두 값을 채운다. (`.env.example` 참고)
 
 ```
@@ -49,9 +50,33 @@ Supabase 는 클라이언트 라이브러리 없이 PostgREST 를 `fetch` 로 �
       &utm_content=repo-link
 ```
 
-`slug` 가 `store` 면 NU40DK 스토어로 간다. 집계가 실패해도 이동은 막지 않는다.
+`slug` 가 `store` 면 NU40DK 스토어(네이버 스마트스토어)로 간다. 집계가 실패해도 이동은 막지 않는다.
+`STORE_URL` 에는 UTM 도, 검색으로 들어갔을 때 붙는 `NaPm`·`nl-ts-pid` 같은 것도 넣지 않는다 —
+그건 그 사람의 클릭 기록이고, UTM 은 `/go` 가 붙인다.
 
 방문자수는 쿠키로 **하루 한 번만** 센다. → [`app/api/visit/route.ts`](app/api/visit/route.ts)
+
+## 운영자 모드 — 문구를 화면에서 고치기
+
+화면 오른쪽 아래 구석에 점이 하나 있다. 눌러서 PIN(`.env.local` 의 `ADMIN_PASSWORD`)을 넣으면
+운영자 모드가 켜지고, 저장소 상세 페이지 제목 옆에 ✎ 가 붙는다. 거기서 고칠 수 있는 것:
+
+```
+제목 · 한 줄 소개 · 소개글 문단 · 태그 · 영상 링크 · 인스타 업로드일
+```
+
+한국어·영어를 각각 저장한다. 사진은 파일이라 여기서 못 바꾼다.
+
+**고친 건 `lib/projects.ts` 를 덮어쓰지 않는다.** 배포된 서버는 파일을 못 고치니까
+(Vercel 파일시스템은 읽기 전용) 수정분만 `project_edits` 표에 쌓고, 화면에 내보낼 때
+파일 위에 얹는다. → [`lib/projects-server.ts`](lib/projects-server.ts)
+
+- 쓰려면 [`supabase/004_project_edits.sql`](supabase/004_project_edits.sql) 을 SQL Editor 에 한 번 실행해야 한다.
+  표가 없으면 **사이트는 멀쩡히 뜨고 파일 문구가 그대로 나오지만, 저장만 실패한다.**
+- **파일을 고쳤는데 화면이 안 바뀌면** 그 프로젝트에 화면에서 고친 게 남아 있는 것이다.
+  편집기의 `원래대로` 를 누르면 파일 내용으로 돌아온다.
+- 공지 배너와 자물쇠가 같다. 한쪽에서 PIN 을 넣으면 다른 쪽도 열린다. → [`lib/admin.ts`](lib/admin.ts)
+- PIN 을 바꾸면 이미 심어 둔 쿠키가 전부 무효가 된다. (쿠키 값이 PIN 에서 나온다)
 
 ## 프로젝트 추가하기
 
@@ -59,6 +84,8 @@ Supabase 는 클라이언트 라이브러리 없이 PostgREST 를 `fetch` 로 �
 
 **`draft: true` 면 갤러리·상세·`/go` 어디에도 안 뜬다.** 릴스가 아직 안 올라간 건은 이걸로 막아 둔다.
 공개할 때 `false` 로 바꾸고 깃허브 레포도 같이 public 으로 돌리면 된다.
+
+문구는 여기 적힌 게 원본이고, 운영자 모드에서 고친 게 있으면 그쪽이 이긴다. (위 참고)
 
 ## 손댈 만한 곳
 
@@ -70,6 +97,7 @@ Supabase 는 클라이언트 라이브러리 없이 PostgREST 를 `fetch` 로 �
 | 배경 빛 덩어리 | `app/globals.css` 의 `.b1` `.b2` `.b3` |
 | 팔로우 팝업 빈도 | `components/FollowGate.tsx` 의 `ONCE_PER_SESSION` |
 | 한글/영문 문구 | `lib/i18n.ts` |
+| 구석 운영자 버튼 위치·크기 | `app/globals.css` 의 `.adm-dot` |
 
 ## 알아 둘 것
 
@@ -78,6 +106,9 @@ Supabase 는 클라이언트 라이브러리 없이 PostgREST 를 `fetch` 로 �
 - **`.detail` 에 `padding` 단축을 쓰면 안 된다.** `.shell` 의 좌우 패딩이 0 으로 덮여서
   다른 페이지와 정렬이 어긋난다. `padding-block` 을 쓸 것.
 - 갈무리는 비트맵 계열 글꼴이라 소수점 크기에서 뭉갠다. 정수 px 로만 쓴다.
+- **환경변수 없이 `npm run dev` 로 돌릴 때는 저장해도 화면이 안 바뀐다.** 폴백 저장소가
+  프로세스 메모리인데 라우트 핸들러와 페이지 렌더가 서로 다른 모듈 인스턴스를 잡아서 그렇다.
+  API 응답은 제대로 온다. 화면까지 확인하려면 Supabase 를 붙이고 볼 것. (공지 배너도 똑같다)
 
 ## 만든 것들
 

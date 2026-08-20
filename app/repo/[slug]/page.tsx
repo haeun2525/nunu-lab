@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Detail from "@/components/Detail";
-import { findProject, publicProjects } from "@/lib/projects";
+import { publicProjects } from "@/lib/projects";
+import { loadProject } from "@/lib/projects-server";
 import { getClicks } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const p = findProject(slug);
+  const p = await loadProject(slug);
   if (!p) return {};
   return {
     title: `${p.title.ko} | 누누`,
@@ -35,7 +36,7 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = findProject(slug);
+  const project = await loadProject(slug);
   if (!project) notFound();
 
   const clicks = await getClicks().catch(() => ({}) as Record<string, number>);

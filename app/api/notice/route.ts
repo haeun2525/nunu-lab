@@ -1,7 +1,6 @@
-import { cookies } from "next/headers";
 import { getNotice, setNotice, type LinkKind } from "@/lib/db";
 import { publicProjects } from "@/lib/projects";
-import { adminCookieName, authorize, hasAdminCookie, tokenOf } from "./auth";
+import { authorize, hasAdminCookie, setAdminCookie } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +34,7 @@ export async function PUT(req: Request) {
     );
   }
   if (auth === "bad") {
-    return Response.json({ error: "비밀번호가 다릅니다." }, { status: 401 });
+    return Response.json({ error: "PIN 이 다릅니다." }, { status: 401 });
   }
 
   const text = String(payload.text ?? "").trim().slice(0, 200);
@@ -79,16 +78,8 @@ export async function PUT(req: Request) {
   try {
     const notice = await setNotice({ text, link_kind: kind, link_url, link_path });
 
-    // 비밀번호로 통과한 경우 쿠키를 심어 다음부터는 안 물어본다
-    const real = process.env.ADMIN_PASSWORD!;
-    const jar = await cookies();
-    jar.set(adminCookieName, tokenOf(real), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 90,
-      path: "/",
-    });
+    // PIN 으로 통과한 경우 쿠키를 심어 다음부터는 안 물어본다
+    await setAdminCookie();
 
     return Response.json({ notice });
   } catch (e) {

@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useLang } from "./LangProvider";
+import { useAdmin } from "./AdminProvider";
 import Comments from "./Comments";
 import FollowGate from "./FollowGate";
+import ProjectEditor from "./ProjectEditor";
 import type { Project } from "@/lib/projects";
 
 function InstagramMark() {
@@ -41,6 +45,13 @@ export default function Detail({
   clicks: number;
 }) {
   const { t, lang } = useLang();
+  const { on: admin } = useAdmin();
+  const router = useRouter();
+
+  // 저장 직후에는 새로 받은 내용을 바로 보여주고, 서버 렌더도 다시 받아 온다.
+  const [p, setP] = useState(project);
+  const [editing, setEditing] = useState(false);
+  useEffect(() => setP(project), [project]);
 
   return (
     <main className="shell detail">
@@ -51,11 +62,11 @@ export default function Detail({
       <div className="detail-grid">
         {/* 왼쪽: 사진만. 스크롤해도 따라온다 */}
         <aside className="detail-media">
-          {(project.images.length ? project.images : [project.thumb]).map((src) => (
+          {(p.images.length ? p.images : [p.thumb]).map((src) => (
             <Image
               key={src}
               src={src}
-              alt={project.title[lang]}
+              alt={p.title[lang]}
               width={720}
               height={960}
               sizes="(max-width: 900px) 100vw, 420px"
@@ -66,14 +77,27 @@ export default function Detail({
 
         {/* 오른쪽: 제목부터 후기까지 전부 */}
         <div className="detail-body">
-          <h1>{project.title[lang]}</h1>
-          <p className="lead">{project.tagline[lang]}</p>
+          <h1 className="detail-h1">
+            {p.title[lang]}
+            {admin && (
+              <button
+                type="button"
+                className="pe-open"
+                onClick={() => setEditing(true)}
+                aria-label="이 페이지 고치기"
+                title="이 페이지 고치기"
+              >
+                ✎
+              </button>
+            )}
+          </h1>
+          <p className="lead">{p.tagline[lang]}</p>
 
           <div className="meta-row">
-            {project.videoUrl && (
+            {p.videoUrl && (
               <a
                 className="btn btn-ig"
-                href={project.videoUrl}
+                href={p.videoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -85,7 +109,7 @@ export default function Detail({
                 넘어가기 직전에 팔로우 팝업이 한 번 잡는다. */}
             <FollowGate
               className="btn btn-gh"
-              goHref={`/go/${project.slug}?from=detail`}
+              goHref={`/go/${p.slug}?from=detail`}
             >
               <GithubMark />
               {t.openGithub}
@@ -94,14 +118,14 @@ export default function Detail({
           </div>
 
           <div className="meta-row">
-            {project.postedAt && (
+            {p.postedAt && (
               <span className="cbox" style={{ padding: "9px 16px" }}>
                 {t.posted}
-                <b style={{ fontSize: 13 }}>{project.postedAt}</b>
+                <b style={{ fontSize: 13 }}>{p.postedAt}</b>
               </span>
             )}
             <span style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {project.tags.map((tag) => (
+              {p.tags.map((tag) => (
                 <span className="tg" key={tag}>
                   {tag}
                 </span>
@@ -110,7 +134,7 @@ export default function Detail({
           </div>
 
           <div className="prose">
-            {project.body.map((para, i) => (
+            {p.body.map((para, i) => (
               <p key={i}>{para[lang]}</p>
             ))}
           </div>
@@ -118,12 +142,23 @@ export default function Detail({
           <section className="sect">
             <h2>{t.reviews}</h2>
             <p className="sect-lead">{t.reviewsLead}</p>
-            <Comments scope="project" slug={project.slug} />
+            <Comments scope="project" slug={p.slug} />
           </section>
         </div>
       </div>
 
       <footer className="foot">{t.footNote}</footer>
+
+      {editing && (
+        <ProjectEditor
+          project={p}
+          onSaved={(next) => {
+            setP(next);
+            router.refresh(); // 갤러리·홈에도 바뀐 문구가 나가게 한다
+          }}
+          onClose={() => setEditing(false)}
+        />
+      )}
     </main>
   );
 }

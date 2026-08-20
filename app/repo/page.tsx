@@ -1,14 +1,15 @@
 import Gallery from "@/components/Gallery";
-import { publicProjects } from "@/lib/projects";
+import { loadProjects } from "@/lib/projects-server";
 import { getClicks, getVisits } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [clicks, visits] = await Promise.all([
+  const [projects, clicks, visits] = await Promise.all([
+    loadProjects(),
     getClicks().catch(() => ({}) as Record<string, number>),
     getVisits().catch(() => ({ today: 0, total: 0 })),
   ]);
 
-  return <Gallery projects={publicProjects()} clicks={clicks} visits={visits} />;
+  return <Gallery projects={projects} clicks={clicks} visits={visits} />;
 }

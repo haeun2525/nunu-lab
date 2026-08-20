@@ -244,6 +244,76 @@ export async function setNotice(
   return saved ?? row;
 }
 
+// ── 저장소 페이지 수정분 (운영자 모드) ─────────────────────────
+//
+// 원본은 lib/projects.ts 다. 여기에는 화면에서 고친 필드만 덮어쓰기로 쌓인다.
+// 배포된 서버는 파일을 못 고치니(읽기 전용) 수정분만 DB 로 뺐다.
+// 행이 없으면 원본이 그대로 나오고, 행을 지우면 원본으로 되돌아간다.
+
+export type Bilingual = { ko: string; en: string };
+
+export type ProjectPatch = {
+  title?: Bilingual;
+  tagline?: Bilingual;
+  body?: Bilingual[];
+  tags?: string[];
+  videoUrl?: string | null;
+  postedAt?: string | null;
+};
+
+export type ProjectEdit = {
+  slug: string;
+  patch: ProjectPatch;
+  updated_at: string;
+};
+
+const memEdits = new Map<string, ProjectEdit>();
+
+/** slug -> 수정분. 갤러리·상세·홈이 한 번에 받아 간다. */
+export async function getProjectEdits(): Promise<Record<string, ProjectEdit>> {
+  if (!hasDb) return Object.fromEntries(memEdits);
+  const rows = (await rest(
+    "project_edits?select=slug,patch,updated_at",
+  )) as ProjectEdit[];
+  return Object.fromEntries(rows.map((r) => [r.slug, r]));
+}
+
+export async function setProjectEdit(
+  slug: string,
+  patch: ProjectPatch,
+): Promise<ProjectEdit> {
+  const row: ProjectEdit = {
+    slug,
+    patch,
+    updated_at: new Date().toISOString(),
+  };
+  if (!hasDb) {
+    memEdits.set(slug, row);
+    return row;
+  }
+  const [saved] = (await rest("project_edits", {
+    method: "POST",
+    // 같은 slug 가 이미 있으면 갈아 끼운다 (upsert)
+    headers: {
+      Prefer: "resolution=merge-duplicates,return=representation",
+    },
+    body: JSON.stringify(row),
+  })) as ProjectEdit[];
+  return saved ?? row;
+}
+
+/** 원래 문구(lib/projects.ts)로 되돌린다. */
+export async function clearProjectEdit(slug: string) {
+  if (!hasDb) {
+    memEdits.delete(slug);
+    return;
+  }
+  await rest(`project_edits?slug=eq.${encodeURIComponent(slug)}`, {
+    method: "DELETE",
+    headers: { Prefer: "return=minimal" },
+  });
+}
+
 /**
  * 이 요청을 집계에 넣을지.
  *

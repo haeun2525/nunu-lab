@@ -1225,3 +1225,258 @@ a.nb:hover,
   color: var(--dim);
   margin: -8px 0 16px;
 }
+
+/* ── 운영자 모드 ───────────────────────────────────────── */
+/* 오른쪽 아래 구석. 평소엔 거의 안 보이고, 켜져 있으면 보라색으로 남는다. */
+.adm-dot {
+  position: fixed;
+  right: calc(10px + env(safe-area-inset-right));
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 120;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  opacity: 0.16;
+  transition: opacity 0.18s ease;
+}
+.adm-dot span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dim);
+}
+.adm-dot:hover {
+  opacity: 1;
+}
+.adm-dot[data-on="1"] {
+  opacity: 1;
+}
+.adm-dot[data-on="1"] span {
+  background: var(--v);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.9);
+}
+
+.adm-form {
+  width: min(380px, 100%);
+}
+.adm-sub {
+  text-align: center;
+  font-family: var(--f-small);
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--dim);
+  margin: 10px 0 18px;
+}
+.adm-pin {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.34);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--ink);
+  font-family: var(--f-num);
+  font-size: 20px;
+  letter-spacing: 0.5em;
+  text-align: center;
+  outline: none;
+}
+.adm-pin:focus {
+  border-color: var(--v);
+}
+.adm-actions {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.adm-actions-1 {
+  grid-template-columns: 1fr;
+}
+.adm-ghost {
+  border: 1px solid var(--line-2);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink-2);
+  border-radius: 12px;
+  padding: 12px;
+  font-family: var(--f-ui);
+  font-size: 12px;
+  cursor: pointer;
+}
+.adm-ghost:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+/* ── 저장소 문구 편집기 ───────────────────────────────── */
+/* 제목 옆 연필. 운영자 모드일 때만 붙는다. */
+.detail-h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pe-open {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-2);
+  border-radius: 9px;
+  background: rgba(139, 92, 246, 0.16);
+  color: #c4b5fd;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pe-open:hover {
+  background: var(--v);
+  color: #fff;
+}
+
+.pe {
+  width: min(560px, 100%);
+  text-align: left;
+  padding: 30px 26px 22px;
+}
+.pe h3 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.pe-langs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.pe-langs button {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--dim);
+  border-radius: 10px;
+  padding: 9px 6px;
+  font-family: var(--f-small);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+.pe-langs button[data-on="1"] {
+  background: var(--v);
+  border-color: var(--v);
+  color: #fff;
+}
+.pe-hint {
+  margin: 10px 0 0;
+  font-family: var(--f-small);
+  font-size: 10px;
+  color: var(--faint);
+  text-align: center;
+}
+/* 폼이 길다. 팝업 안에서만 스크롤시킨다 */
+.pe-scroll {
+  max-height: min(52vh, 460px);
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-top: 4px;
+}
+.pe-scroll input,
+.pe-scroll textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.34);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 13.5px;
+  line-height: 1.75;
+  outline: none;
+  resize: vertical;
+}
+.pe-scroll input:focus,
+.pe-scroll textarea:focus {
+  border-color: var(--v);
+}
+.pe-para {
+  position: relative;
+  margin-bottom: 8px;
+}
+/* 글이 지우기 버튼 밑으로 파고들지 않게 */
+.pe-para textarea {
+  padding-right: 38px;
+}
+.pe-drop {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(10, 11, 24, 0.85);
+  color: var(--faint);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pe-drop:hover {
+  color: #f472b6;
+  border-color: #f472b6;
+}
+.pe-add {
+  width: 100%;
+  border: 1px dashed var(--line-2);
+  background: none;
+  color: var(--dim);
+  border-radius: 10px;
+  padding: 10px;
+  font-family: var(--f-small);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+.pe-add:hover {
+  color: var(--ink);
+  border-color: var(--v);
+}
+.pe-actions {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pe-ask {
+  margin-right: auto;
+  font-family: var(--f-small);
+  font-size: 10.5px;
+  color: var(--ink-2);
+}
+.pe-danger {
+  border: 1px solid #f472b6;
+  background: rgba(244, 114, 182, 0.14);
+  color: #f9a8d4;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: var(--f-ui);
+  font-size: 12px;
+  cursor: pointer;
+}
+.pe-danger:hover {
+  background: #f472b6;
+  color: #12060d;
+}
+.pe-note {
+  margin-top: 12px;
+  font-family: var(--f-small);
+  font-size: 10px;
+  color: var(--faint);
+  text-align: center;
+}
+@media (max-width: 520px) {
+  .pe {
+    padding: 26px 18px 18px;
+  }
+  .pe-scroll {
+    max-height: 46vh;
+  }
+}

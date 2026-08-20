@@ -3,6 +3,8 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import { LangProvider } from "@/components/LangProvider";
 import VisitPing from "@/components/VisitPing";
+import { AdminProvider } from "@/components/AdminProvider";
+import AdminDock from "@/components/AdminDock";
 
 export const metadata: Metadata = {
   title: "누누 | 바이브코딩과 피지컬 AI가 만났을 때",
@@ -23,14 +25,18 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <LangProvider>
-          <div className="space-bg" aria-hidden>
-            <span className="blob b1" />
-            <span className="blob b2" />
-            <span className="blob b3" />
-          </div>
-          <VisitPing />
-          <Nav />
-          {children}
+          <AdminProvider>
+            <div className="space-bg" aria-hidden>
+              <span className="blob b1" />
+              <span className="blob b2" />
+              <span className="blob b3" />
+            </div>
+            <VisitPing />
+            <Nav />
+            {children}
+            {/* 오른쪽 아래 구석의 운영자 입구 */}
+            <AdminDock />
+          </AdminProvider>
         </LangProvider>
       </body>
     </html>
