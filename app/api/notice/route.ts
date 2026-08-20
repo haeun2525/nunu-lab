@@ -1,47 +1,19 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { getNotice, setNotice, type LinkKind } from "@/lib/db";
 import { publicProjects } from "@/lib/projects";
+import { adminCookieName, authorize, hasAdminCookie, tokenOf } from "./auth";
 
 export const dynamic = "force-dynamic";
 
-const COOKIE = "nunu_admin";
-
-/**
- * 운영자 인증.
- *
- * 비밀번호는 ADMIN_PASSWORD 환경변수에만 있다. 한 번 맞히면 그 해시를 httpOnly
- * 쿠키로 심어 두고, 다음부터는 쿠키만으로 통과시킨다. 쿠키 값이 비밀번호에서
- * 파생되므로 비밀번호를 모르면 위조할 수 없다.
- */
-const tokenOf = (pw: string) =>
-  createHash("sha256").update(`nunu-lab:${pw}`).digest("hex");
-
-function sameString(a: string, b: string) {
-  const x = Buffer.from(a);
-  const y = Buffer.from(b);
-  if (x.length !== y.length) return false;
-  return timingSafeEqual(x, y);
-}
-
-async function authorized(password?: string): Promise<"ok" | "bad" | "unset"> {
-  const real = process.env.ADMIN_PASSWORD;
-  if (!real) return "unset"; // 비밀번호를 안 정해 두면 수정 자체를 막는다
-
-  const jar = await cookies();
-  const cookie = jar.get(COOKIE)?.value;
-  if (cookie && sameString(cookie, tokenOf(real))) return "ok";
-  if (password && sameString(password, real)) return "ok";
-  return "bad";
-}
-
 export async function GET() {
+  // canEdit 이 true 면 비밀번호 화면을 건너뛴다
+  const canEdit = await hasAdminCookie().catch(() => false);
   try {
     const notice = await getNotice();
-    return Response.json({ notice });
+    return Response.json({ notice, canEdit });
   } catch (e) {
     console.error("[notice] 조회 실패", e);
-    return Response.json({ notice: null });
+    return Response.json({ notice: null, canEdit });
   }
 }
 
@@ -53,7 +25,7 @@ export async function PUT(req: Request) {
     return Response.json({ error: "bad json" }, { status: 400 });
   }
 
-  const auth = await authorized(
+  const auth = await authorize(
     typeof payload.password === "string" ? payload.password : undefined,
   );
   if (auth === "unset") {
@@ -110,7 +82,7 @@ export async function PUT(req: Request) {
     // 비밀번호로 통과한 경우 쿠키를 심어 다음부터는 안 물어본다
     const real = process.env.ADMIN_PASSWORD!;
     const jar = await cookies();
-    jar.set(COOKIE, tokenOf(real), {
+    jar.set(adminCookieName, tokenOf(real), {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",

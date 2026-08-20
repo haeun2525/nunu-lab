@@ -46,6 +46,8 @@ export default function NoticeBanner({
   const { t } = useLang();
   const [notice, setNotice] = useState<Notice | null>(initial);
   const [open, setOpen] = useState(false);
+  // 비밀번호 화면과 수정 화면을 분리한다. 쿠키가 이미 있으면 바로 edit 으로 간다.
+  const [step, setStep] = useState<"pw" | "edit">("pw");
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -62,6 +64,52 @@ export default function NoticeBanner({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
+
+  // 예전에 한 번 통과했으면 비밀번호를 다시 묻지 않는다
+  const openEditor = async () => {
+    setErr(null);
+    setPw("");
+    setOpen(true);
+    setStep("pw");
+    try {
+      const r = await fetch("/api/notice", { cache: "no-store" });
+      const j = await r.json();
+      if (j.canEdit) setStep("edit");
+      if (j.notice) {
+        setNotice(j.notice);
+        setDraft({
+          text: j.notice.text,
+          link_kind: j.notice.link_kind,
+          link_url: j.notice.link_url,
+          link_path: j.notice.link_path || pages[0]?.path || "/repo",
+        });
+      }
+    } catch {
+      /* 확인 실패하면 그냥 비밀번호를 묻는다 */
+    }
+  };
+
+  // 1단계 — 비밀번호만 확인한다
+  const unlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    try {
+      const r = await fetch("/api/notice/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error ?? "인증 실패");
+      setPw("");
+      setStep("edit");
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "인증 실패");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const stamp = (iso?: string) => {
     if (!iso) return "";
@@ -82,12 +130,11 @@ export default function NoticeBanner({
       const r = await fetch("/api/notice", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...draft, password: pw || undefined }),
+        body: JSON.stringify(draft),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? "저장 실패");
       setNotice(j.notice);
-      setPw("");
       setOpen(false);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "저장 실패");
@@ -134,7 +181,7 @@ export default function NoticeBanner({
       )}
 
       {/* 운영자만 쓰는 자물쇠. 비밀번호를 모르면 저장이 안 된다. */}
-      <button className="nb-edit" onClick={() => setOpen(true)} aria-label={t.noticeEdit}>
+      <button className="nb-edit" onClick={openEditor} aria-label={t.noticeEdit}>
         ✎
       </button>
 
@@ -143,7 +190,10 @@ export default function NoticeBanner({
           className="gate-back"
           onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
-          <form className="gate nb-form" onSubmit={save}>
+          <form
+            className="gate nb-form"
+            onSubmit={step === "pw" ? unlock : save}
+          >
             <button
               type="button"
               className="gate-x"
@@ -152,70 +202,90 @@ export default function NoticeBanner({
             >
               ✕
             </button>
-            <h3>{t.noticeEdit}</h3>
 
-            <label className="nb-l">{t.noticePw}</label>
-            <input
-              type="password"
-              value={pw}
-              onChange={(e) => setPw(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="current-password"
-            />
+            {step === "pw" ? (
+              <>
+                <h3>{t.noticeLocked}</h3>
+                <p className="nb-sub">{t.noticeLockedSub}</p>
+                <input
+                  type="password"
+                  value={pw}
+                  onChange={(e) => setPw(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  autoFocus
+                />
+                {err && <p className="nb-err">{err}</p>}
+                <div className="nb-actions">
+                  <button className="send" type="submit" disabled={busy || !pw}>
+                    {busy ? t.sending : t.noticeUnlock}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3>{t.noticeEdit}</h3>
 
-            <label className="nb-l">{t.noticeText}</label>
-            <input
-              type="text"
-              value={draft.text}
-              maxLength={200}
-              onChange={(e) => setDraft({ ...draft, text: e.target.value })}
-              placeholder={t.noticePlaceholder}
-            />
+                <label className="nb-l">{t.noticeText}</label>
+                <input
+                  type="text"
+                  value={draft.text}
+                  maxLength={200}
+                  onChange={(e) => setDraft({ ...draft, text: e.target.value })}
+                  placeholder={t.noticePlaceholder}
+                  autoFocus
+                />
 
-            <label className="nb-l">{t.noticeLink}</label>
-            <div className="nb-kinds">
-              {(["none", "url", "internal"] as const).map((k) => (
-                <button
-                  type="button"
-                  key={k}
-                  data-on={draft.link_kind === k ? "1" : "0"}
-                  onClick={() => setDraft({ ...draft, link_kind: k })}
-                >
-                  {k === "none" ? t.linkNone : k === "url" ? t.linkUrl : t.linkInternal}
-                </button>
-              ))}
-            </div>
+                <label className="nb-l">{t.noticeLink}</label>
+                <div className="nb-kinds">
+                  {(["none", "url", "internal"] as const).map((k) => (
+                    <button
+                      type="button"
+                      key={k}
+                      data-on={draft.link_kind === k ? "1" : "0"}
+                      onClick={() => setDraft({ ...draft, link_kind: k })}
+                    >
+                      {k === "none"
+                        ? t.linkNone
+                        : k === "url"
+                          ? t.linkUrl
+                          : t.linkInternal}
+                    </button>
+                  ))}
+                </div>
 
-            {draft.link_kind === "url" && (
-              <input
-                type="url"
-                value={draft.link_url}
-                onChange={(e) => setDraft({ ...draft, link_url: e.target.value })}
-                placeholder="https://..."
-              />
+                {draft.link_kind === "url" && (
+                  <input
+                    type="url"
+                    value={draft.link_url}
+                    onChange={(e) => setDraft({ ...draft, link_url: e.target.value })}
+                    placeholder="https://..."
+                  />
+                )}
+
+                {draft.link_kind === "internal" && (
+                  <select
+                    value={draft.link_path}
+                    onChange={(e) => setDraft({ ...draft, link_path: e.target.value })}
+                  >
+                    {pages.map((p) => (
+                      <option key={p.path} value={p.path}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {err && <p className="nb-err">{err}</p>}
+
+                <div className="nb-actions">
+                  <button className="send" type="submit" disabled={busy}>
+                    {busy ? t.sending : t.noticeSave}
+                  </button>
+                </div>
+                <p className="nb-hint">{t.noticeHint}</p>
+              </>
             )}
-
-            {draft.link_kind === "internal" && (
-              <select
-                value={draft.link_path}
-                onChange={(e) => setDraft({ ...draft, link_path: e.target.value })}
-              >
-                {pages.map((p) => (
-                  <option key={p.path} value={p.path}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {err && <p className="nb-err">{err}</p>}
-
-            <div className="nb-actions">
-              <button className="send" type="submit" disabled={busy}>
-                {busy ? t.sending : t.noticeSave}
-              </button>
-            </div>
-            <p className="nb-hint">{t.noticeHint}</p>
           </form>
         </div>
       )}
