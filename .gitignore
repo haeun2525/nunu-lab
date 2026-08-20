@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 로컬 환경변수
+.env
+.env.local
+
+# 예시 파일은 올린다 (키는 비어 있음)
+!.env.example
