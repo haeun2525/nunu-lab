@@ -1006,3 +1006,172 @@ textarea {
     drop-shadow(0 0 6px rgba(34, 211, 238, 0.45));
 }
 
+
+/* ── 공지 배너 ────────────────────────────────────────── */
+.nb-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.nb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  max-width: 720px;
+  /* 픽셀 느낌 — 둥근 모서리 없이 각지게, 테두리는 2px */
+  border: 2px solid rgba(139, 92, 246, 0.55);
+  background: rgba(12, 10, 30, 0.78);
+  box-shadow: 0 0 0 2px rgba(5, 6, 13, 0.9), 0 0 26px rgba(139, 92, 246, 0.28);
+  backdrop-filter: blur(8px);
+  padding: 10px 14px;
+  font-family: var(--f-ui);
+  font-size: 12px;
+  color: var(--ink);
+}
+a.nb:hover,
+.nb:has(+ .nb-edit):hover {
+  border-color: rgba(167, 139, 250, 0.95);
+  background: rgba(20, 16, 44, 0.9);
+}
+.nb-static,
+.nb-empty {
+  cursor: default;
+}
+.nb-empty {
+  color: var(--faint);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+.nb-horn {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  color: #f7a83c;
+  filter: drop-shadow(0 0 6px rgba(247, 168, 60, 0.75));
+}
+.nb-empty .nb-horn {
+  color: var(--faint);
+  filter: none;
+}
+.nb-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+.nb-go {
+  flex: 0 0 auto;
+  color: #a78bfa;
+  font-size: 15px;
+  line-height: 1;
+}
+.nb-time {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-left: 14px;
+  font-family: var(--f-num);
+  font-size: 10px;
+  color: var(--faint);
+}
+.nb-edit {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--faint);
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+.nb-edit:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* 수정 폼 */
+.nb-form {
+  text-align: left;
+  width: min(460px, 100%);
+}
+.nb-form h3 {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.nb-l {
+  display: block;
+  font-family: var(--f-small);
+  font-size: 10.5px;
+  color: var(--dim);
+  margin: 14px 0 6px;
+  letter-spacing: 0.08em;
+}
+.nb-form input,
+.nb-form select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.34);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: var(--f-body);
+  font-size: 14px;
+  outline: none;
+}
+.nb-form input:focus,
+.nb-form select:focus {
+  border-color: var(--v);
+}
+.nb-kinds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.nb-kinds button {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--dim);
+  border-radius: 10px;
+  padding: 9px 6px;
+  font-family: var(--f-small);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+.nb-kinds button[data-on="1"] {
+  background: var(--v);
+  border-color: var(--v);
+  color: #fff;
+}
+.nb-err {
+  margin-top: 12px;
+  font-family: var(--f-small);
+  font-size: 11px;
+  color: #f472b6;
+}
+.nb-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+.nb-hint {
+  margin-top: 12px;
+  font-family: var(--f-small);
+  font-size: 10px;
+  color: var(--faint);
+  text-align: center;
+}
+@media (max-width: 720px) {
+  .nb {
+    font-size: 11px;
+    padding: 9px 11px;
+    gap: 8px;
+  }
+  .nb-time {
+    display: none;
+  }
+}

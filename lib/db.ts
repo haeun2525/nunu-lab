@@ -189,6 +189,52 @@ export function deviceOf(ua: string | null): string {
   return /Mobi|Android|iPhone|iPad|iPod/i.test(ua) ? "mobile" : "desktop";
 }
 
+// ── 홈 공지 배너 ───────────────────────────────────────────────
+
+export type LinkKind = "none" | "url" | "internal";
+
+export type Notice = {
+  text: string;
+  link_kind: LinkKind;
+  link_url: string;
+  link_path: string;
+  updated_at: string;
+};
+
+const EMPTY_NOTICE: Notice = {
+  text: "",
+  link_kind: "none",
+  link_url: "",
+  link_path: "",
+  updated_at: new Date(0).toISOString(),
+};
+
+let memNotice: Notice = { ...EMPTY_NOTICE };
+
+export async function getNotice(): Promise<Notice> {
+  if (!hasDb) return memNotice;
+  const rows = (await rest(
+    "notice?id=eq.1&select=text,link_kind,link_url,link_path,updated_at",
+  )) as Notice[];
+  return rows[0] ?? EMPTY_NOTICE;
+}
+
+export async function setNotice(
+  n: Omit<Notice, "updated_at">,
+): Promise<Notice> {
+  const row = { ...n, updated_at: new Date().toISOString() };
+  if (!hasDb) {
+    memNotice = row;
+    return row;
+  }
+  const [saved] = (await rest("notice?id=eq.1", {
+    method: "PATCH",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify(row),
+  })) as Notice[];
+  return saved ?? row;
+}
+
 /**
  * 로컬에서 띄운 것(개발·스크린샷·curl 테스트)은 집계에서 뺀다.
  * 이걸 안 막으면 테스트 트래픽이 실제 방문자수에 섞인다.

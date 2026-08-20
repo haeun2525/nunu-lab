@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useLang } from "./LangProvider";
 import RasterHero from "./RasterHero";
 import FloatingChars from "./FloatingChars";
+import NoticeBanner from "./NoticeBanner";
+import type { Notice } from "@/lib/db";
 
 type Orb = {
   key: string;
@@ -32,9 +34,13 @@ const ORBS: Orb[] = [
 export default function Home({
   visits,
   clicks,
+  notice,
+  pages,
 }: {
   visits: { today: number; total: number };
   clicks: number;
+  notice: Notice | null;
+  pages: { path: string; label: string }[];
 }) {
   const { t } = useLang();
 
@@ -52,6 +58,8 @@ export default function Home({
 
       <main className="home">
         <div className="home-in">
+          <NoticeBanner initial={notice} pages={pages} />
+
           <p className="handle">@physical_nunu · {t.role}</p>
 
           <h1 className="brand">
