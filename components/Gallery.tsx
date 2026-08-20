@@ -21,9 +21,13 @@ export default function Gallery({
   const ghTotal = Object.values(clicks).reduce((a, b) => a + b, 0);
   const [sort, setSort] = useState<Sort>("recent");
 
-  // 최근/오래된 기준은 인스타 업로드일. 없으면 맨 뒤로 민다.
+  // 최근/오래된 기준은 인스타 업로드일. 아직 안 올린 건은 저장소에 올린 날로 센다
+  // (안 그러면 방금 올린 게 NEW 뱃지를 달고 맨 뒤에 가 있는다).
   const sorted = useMemo(() => {
-    const at = (p: Project) => (p.postedAt ? Date.parse(p.postedAt) : 0);
+    const at = (p: Project) => {
+      const d = p.postedAt ?? p.addedAt;
+      return d ? Date.parse(d) : 0;
+    };
     const list = [...projects];
     if (sort === "clicks") {
       list.sort((a, b) => (clicks[b.slug] ?? 0) - (clicks[a.slug] ?? 0) || at(b) - at(a));

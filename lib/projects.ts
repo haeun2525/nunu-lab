@@ -158,6 +158,42 @@ export const PROJECTS: Project[] = [
     postedAt: "2026-08-20",
     draft: false,
   },
+  {
+    slug: "lyrics",
+    no: 5,
+    repo: "haeun2525/nu40-lyrics",
+    title: { ko: "NU40DK 가사 디스플레이", en: "NU40DK Lyrics Display" },
+    tagline: {
+      ko: "노래를 틀면 손바닥만 한 화면에 가사가 뜨고, 소리에 맞춰 막대가 춤춥니다.",
+      en: "Play a song and the lyrics show up on a palm-sized screen, with bars dancing to the sound.",
+    },
+    body: [
+      {
+        ko: "노트북에서 노래를 틀면, 지금 나오는 그 대목의 가사가 작은 화면에 뜹니다. 아래에서는 막대들이 소리에 맞춰 오르내리고요. 책상 위에 나만 듣는 라디오가 한 대 생기는 셈이에요.",
+        en: "Play a song on your laptop and the line that's playing right now appears on a little screen, with bars bouncing to the sound underneath. It's like having your own tiny radio on the desk.",
+      },
+      {
+        ko: "배경은 네 가지예요. 별이 쏟아지는 밤, 물결, 카세트테이프, 도시 야경. 노래를 듣는 중에 보드의 버튼을 누르면 바로 바뀌고, 배경도 비트에 맞춰 같이 움직입니다.",
+        en: "There are four backdrops — a starry night, ripples, a cassette tape, a city skyline. Press a button on the board mid-song and it switches right away, and the backdrop moves with the beat too.",
+      },
+      {
+        ko: "소리도 일부러 옛날 라디오처럼 만들었어요. 살짝 지직거리고 물먹은 듯한 톤인데, 얼마나 낡은 소리로 들을지는 취향껏 조절할 수 있습니다.",
+        en: "The sound is deliberately old-radio: a little crackly and washed out. How worn it sounds is up to you.",
+      },
+      {
+        ko: "노래 대신 춤추는 영상을 넣으면 화면 속 사람이 그 춤을 따라 춥니다. 같은 화면으로 만든 다른 모드예요.",
+        en: "Feed it a dance video instead of a song and the figure on screen copies the moves — the same screen, a different mode.",
+      },
+    ],
+    tags: ["Python", "Arduino", "OLED", "macOS"],
+    thumb: "/thumbs/lyrics.jpg",
+    images: ["/thumbs/lyrics.jpg"],
+    // 릴스는 아직 안 올라갔다. 올리면 운영자 모드 ✎ 로 영상 링크·업로드일을 채우면 된다.
+    videoUrl: null,
+    addedAt: "2026-08-20",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
