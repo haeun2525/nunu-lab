@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { bumpVisit, deviceOf, logEvent, refHostOf, shouldCount } from "@/lib/db";
+import { bumpVisit, deviceOf, kstDate, logEvent, refHostOf, shouldCount } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!shouldCount(req)) return Response.json({ counted: false, skipped: true });
 
   const jar = await cookies();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = kstDate(); // DB 와 같은 한국시간 기준이어야 한다
 
   if (jar.get(COOKIE)?.value === today) {
     return Response.json({ counted: false });

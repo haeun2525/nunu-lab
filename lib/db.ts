@@ -48,7 +48,16 @@ async function rest(path: string, init?: RequestInit) {
   return res.status === 204 ? null : res.json();
 }
 
-const today = () => new Date().toISOString().slice(0, 10);
+/**
+ * 한국시간 기준 날짜(YYYY-MM-DD).
+ *
+ * DB 의 bump_visit() 도 Asia/Seoul 로 날을 센다. 쿠키·클라이언트가 UTC 로 세면
+ * 한국시간 00~09 시 사이에 기준일이 어긋나서 같은 사람이 두 번 잡힌다.
+ */
+export const kstDate = (d: Date = new Date()) =>
+  new Date(d.getTime() + 9 * 3600e3).toISOString().slice(0, 10);
+
+const today = () => kstDate();
 
 // ── 클릭(깃허브/스토어 이동) ────────────────────────────────────
 

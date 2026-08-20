@@ -11,7 +11,8 @@ import { useEffect } from "react";
  */
 export default function VisitPing() {
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    // 서버·DB 와 같은 한국시간 기준. 방문자 현지 시간대를 쓰면 기준일이 어긋난다.
+    const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
     try {
       if (localStorage.getItem("nunu-visited") === today) return;
       localStorage.setItem("nunu-visited", today);
