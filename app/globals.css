@@ -441,11 +441,12 @@ textarea {
   line-height: 1.5;
 }
 .detail .lead {
-  font-family: var(--f-small);
-  font-size: 13px;
+  font-family: var(--f-body);
+  font-size: 15px;
+  letter-spacing: -0.01em;
   color: var(--ink-2);
   margin-top: 14px;
-  line-height: 1.95;
+  line-height: 1.85;
 }
 .meta-row {
   display: flex;
@@ -1039,8 +1040,10 @@ textarea {
   box-shadow: 0 0 0 2px rgba(5, 6, 13, 0.9), 0 0 26px rgba(139, 92, 246, 0.28);
   backdrop-filter: blur(8px);
   padding: 10px 14px;
-  font-family: var(--f-ui);
-  font-size: 12px;
+  /* 긴 문장은 갈무리로 읽기 힘들다. 배너 본문만 프리텐다드로. */
+  font-family: var(--f-body);
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
   color: var(--ink);
 }
 a.nb:hover,

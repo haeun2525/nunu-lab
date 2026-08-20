@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { findProject, STORE_URL } from "@/lib/projects";
-import { bumpClick, deviceOf, isLocalRequest, logEvent, refHostOf } from "@/lib/db";
+import { bumpClick, deviceOf, logEvent, refHostOf, shouldCount } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +35,7 @@ export async function GET(
 
   // 집계 실패가 이동을 막으면 안 된다. 로컬 테스트는 아예 세지 않는다.
   try {
-    if (isLocalRequest(req)) return NextResponse.redirect(url.toString(), 302);
+    if (!shouldCount(req)) return NextResponse.redirect(url.toString(), 302);
     await Promise.all([
       bumpClick(slug),
       logEvent({

@@ -236,9 +236,19 @@ export async function setNotice(
 }
 
 /**
- * 로컬에서 띄운 것(개발·스크린샷·curl 테스트)은 집계에서 뺀다.
- * 이걸 안 막으면 테스트 트래픽이 실제 방문자수에 섞인다.
+ * 이 요청을 집계에 넣을지.
+ *
+ * 빼는 것 두 가지:
+ *  1. 로컬(개발·스크린샷·curl 테스트)
+ *  2. Vercel 프리뷰 배포 — 배포마다 도메인이 새로 생기고 쿠키도 도메인별이라,
+ *     배포 확인만 해도 매번 새 방문자로 잡힌다.
  */
+export function shouldCount(req: Request): boolean {
+  if (process.env.VERCEL_ENV === "preview") return false;
+  return !isLocalRequest(req);
+}
+
+/** 로컬에서 띄운 것인가. */
 export function isLocalRequest(req: Request): boolean {
   const host = (req.headers.get("host") ?? "").toLowerCase();
   if (!host) return false;

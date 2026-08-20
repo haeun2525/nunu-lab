@@ -31,7 +31,7 @@ export const T = {
 
     repoTitle: "저장소",
     repoLead: "만든 것들. 눌러서 열어보고, 가져가서 만들어 보세요.",
-    sortClicks: "저장 많은순",
+    sortClicks: "인기 많은순",
     sortRecent: "최근순",
     sortOldest: "오래된순",
     backToRepo: "← 저장소로",
@@ -83,8 +83,8 @@ export const T = {
     tabGuest: "Guestbook",
 
     role: "AI Creator",
-    brand: "Nunulab",
-    brandEn: "누누랩",
+    brand: "", // 영문에서는 한글 병기를 쓰지 않는다
+    brandEn: "Nunulab",
     bio1: "When vibe coding meets physical AI",
     bio2: "Because in the end, reality runs on hardware….",
     bio3: "Let's see how far this goes | Buy the dip ✌🏻",
@@ -104,7 +104,7 @@ export const T = {
 
     repoTitle: "Archive",
     repoLead: "Things I built. Open one up, take it, build your own.",
-    sortClicks: "Most saved",
+    sortClicks: "Most popular",
     sortRecent: "Newest",
     sortOldest: "Oldest",
     backToRepo: "← Back",

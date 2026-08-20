@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { bumpVisit, deviceOf, isLocalRequest, logEvent, refHostOf } from "@/lib/db";
+import { bumpVisit, deviceOf, logEvent, refHostOf, shouldCount } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -7,8 +7,8 @@ const COOKIE = "nunu_v";
 
 /** 하루 한 번만 센다. 판정은 쿠키에 박아 둔 날짜로 한다. */
 export async function POST(req: Request) {
-  // 로컬에서 띄운 건 세지 않는다
-  if (isLocalRequest(req)) return Response.json({ counted: false, local: true });
+  // 로컬·프리뷰 배포는 세지 않는다
+  if (!shouldCount(req)) return Response.json({ counted: false, skipped: true });
 
   const jar = await cookies();
   const today = new Date().toISOString().slice(0, 10);

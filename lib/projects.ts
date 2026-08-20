@@ -19,8 +19,7 @@ export type Project = {
   tags: string[];
   thumb: string;
   images: string[];
-  /** 인스타 원본 영상. 없으면 버튼이 안 뜬다.
-   *  지금은 전부 프로필 주소다. 게시물 퍼머링크를 받으면 각각 교체할 것. */
+  /** 인스타 게시물 퍼머링크. 없으면 '원본 영상 보기' 버튼이 안 뜬다. */
   videoUrl: string | null;
   /** 저장소에 올린 날(YYYY-MM-DD). 7일 이내면 갤러리에 NEW 뱃지가 붙는다.
    *  null 이면 초기 등록분이라 뱃지 대상이 아니다. */
@@ -56,7 +55,7 @@ export const PROJECTS: Project[] = [
     tags: ["Python", "Arduino", "STFT", "macOS"],
     thumb: "/thumbs/music-led.jpg",
     images: ["/thumbs/music-led.jpg"],
-    videoUrl: "https://www.instagram.com/physical_nunu/",
+    videoUrl: "https://www.instagram.com/p/Db5R_pQyGsX/",
     addedAt: null,
     postedAt: "2026-08-11",
     draft: false,
@@ -87,7 +86,7 @@ export const PROJECTS: Project[] = [
     tags: ["Python", "Arduino", "macOS"],
     thumb: "/thumbs/launcher.jpg",
     images: ["/thumbs/launcher.jpg"],
-    videoUrl: "https://www.instagram.com/physical_nunu/",
+    videoUrl: "https://www.instagram.com/p/Db-NozDymyG/",
     addedAt: null,
     postedAt: "2026-08-13",
     draft: false,
@@ -118,7 +117,7 @@ export const PROJECTS: Project[] = [
     tags: ["Swift", "iBeacon", "BLE", "Arduino"],
     thumb: "/thumbs/welcome.jpg",
     images: ["/thumbs/welcome.jpg"],
-    videoUrl: "https://www.instagram.com/physical_nunu/",
+    videoUrl: "https://www.instagram.com/p/DcFJRCGSgAG/",
     addedAt: null,
     postedAt: "2026-08-14",
     draft: false,
@@ -149,7 +148,7 @@ export const PROJECTS: Project[] = [
     tags: ["Swift", "BLE", "Arduino"],
     thumb: "/thumbs/together.jpg",
     images: ["/thumbs/together.jpg"],
-    videoUrl: "https://www.instagram.com/physical_nunu/",
+    videoUrl: "https://www.instagram.com/p/DcP450BykKQ/",
     addedAt: "2026-08-20",
     postedAt: "2026-08-20",
     draft: false,

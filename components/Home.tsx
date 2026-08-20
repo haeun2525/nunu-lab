@@ -63,7 +63,7 @@ export default function Home({
           <p className="handle">@physical_nunu · {t.role}</p>
 
           <h1 className="brand">
-            <span className="brand-ko">{t.brand}</span>
+            {t.brand && <span className="brand-ko">{t.brand}</span>}
             <span className="brand-en">{t.brandEn}</span>
             <span className="brand-emoji">👾🤖</span>
           </h1>

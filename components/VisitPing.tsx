@@ -4,13 +4,20 @@ import { useEffect } from "react";
 
 /**
  * 방문자 1명을 하루에 한 번만 센다.
- * 판정은 서버가 쿠키로 하고, 여기서는 첫 페이지에서 한 번만 찔러 준다.
+ *
+ * 최종 판정은 서버가 쿠키로 한다. 여기서는 그 앞단에서 한 번 더 걸러 준다 —
+ * sessionStorage 는 탭마다 따로라 탭을 여러 개 열면 쿠키가 심어지기 전에
+ * 요청이 동시에 나가 버린다. 그래서 localStorage 에 날짜로 표시해 둔다.
  */
 export default function VisitPing() {
   useEffect(() => {
-    // 같은 탭에서 라우팅할 때마다 부르지 않도록 세션 단위로 막는다.
-    if (sessionStorage.getItem("nunu-visited")) return;
-    sessionStorage.setItem("nunu-visited", "1");
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      if (localStorage.getItem("nunu-visited") === today) return;
+      localStorage.setItem("nunu-visited", today);
+    } catch {
+      /* 저장소를 못 쓰면 서버 쿠키에만 맡긴다 */
+    }
     fetch("/api/visit", { method: "POST", keepalive: true }).catch(() => {});
   }, []);
 
