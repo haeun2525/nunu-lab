@@ -188,10 +188,10 @@ export const PROJECTS: Project[] = [
     tags: ["Python", "Arduino", "OLED", "macOS"],
     thumb: "/thumbs/lyrics.jpg",
     images: ["/thumbs/lyrics.jpg"],
-    // 릴스는 아직 안 올라갔다. 올리면 운영자 모드 ✎ 로 영상 링크·업로드일을 채우면 된다.
+    // 릴스는 아직 안 올라갔다. 올리면 운영자 모드 ✎ 로 영상 링크를 채우면 된다.
     videoUrl: null,
     addedAt: "2026-08-20",
-    postedAt: null,
+    postedAt: "2026-08-20",
     draft: false,
   },
 ];
