@@ -189,4 +189,22 @@ export function deviceOf(ua: string | null): string {
   return /Mobi|Android|iPhone|iPad|iPod/i.test(ua) ? "mobile" : "desktop";
 }
 
+/**
+ * 로컬에서 띄운 것(개발·스크린샷·curl 테스트)은 집계에서 뺀다.
+ * 이걸 안 막으면 테스트 트래픽이 실제 방문자수에 섞인다.
+ */
+export function isLocalRequest(req: Request): boolean {
+  const host = (req.headers.get("host") ?? "").toLowerCase();
+  if (!host) return false;
+  const name = host.split(":")[0];
+  return (
+    name === "localhost" ||
+    name === "127.0.0.1" ||
+    name === "0.0.0.0" ||
+    name === "::1" ||
+    name === "[::1]" ||
+    name.endsWith(".local")
+  );
+}
+
 export type { Comment };
