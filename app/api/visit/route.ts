@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
-import { bumpVisit } from "@/lib/db";
+import { bumpVisit, deviceOf, logEvent, refHostOf } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 const COOKIE = "nunu_v";
 
 /** 하루 한 번만 센다. 판정은 쿠키에 박아 둔 날짜로 한다. */
-export async function POST() {
+export async function POST(req: Request) {
   const jar = await cookies();
   const today = new Date().toISOString().slice(0, 10);
 
@@ -15,7 +15,14 @@ export async function POST() {
   }
 
   try {
-    await bumpVisit();
+    await Promise.all([
+      bumpVisit(),
+      logEvent({
+        kind: "visit",
+        refHost: refHostOf(req.headers.get("referer")),
+        device: deviceOf(req.headers.get("user-agent")),
+      }),
+    ]);
   } catch (e) {
     console.error("[visit] bump 실패", e);
     return Response.json({ counted: false }, { status: 200 });

@@ -54,18 +54,17 @@ export default function Home({
         <div className="home-in">
           <p className="handle">@physical_nunu · {t.role}</p>
 
-          <h1>
-            {t.headline1}
-            <em>{t.headlineEm}</em>
-            {t.headline2}
-            <br />
-            {t.headline3}
+          <h1 className="brand">
+            <span className="brand-ko">{t.brand}</span>
+            <span className="brand-en">{t.brandEn}</span>
+            <span className="brand-emoji">👾🤖</span>
           </h1>
 
           <p className="bio">
-            {t.bio1}
-            <br />
+            <span className="bio-lead">{t.bio1}</span>
             {t.bio2}
+            <br />
+            {t.bio3}
           </p>
 
           <div className="counts" style={{ justifyContent: "center", marginTop: 28 }}>

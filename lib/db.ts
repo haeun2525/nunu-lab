@@ -8,7 +8,8 @@
  * 폴백은 서버 프로세스가 죽으면 사라진다. 로컬 확인용이지 운영용이 아니다.
  */
 
-const URL_ = process.env.SUPABASE_URL;
+// 대시보드에서 복사하면 뒤에 /rest/v1/ 이 붙어 오는 경우가 있다. 무엇을 넣든 같게 만든다.
+const URL_ = process.env.SUPABASE_URL?.replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const hasDb = Boolean(URL_ && KEY);
@@ -139,6 +140,53 @@ export async function addComment(input: {
     body: JSON.stringify(row),
   })) as Comment[];
   return saved;
+}
+
+// ── 시점별 분석용 이벤트 로그 ──────────────────────────────────
+//
+// 총합만 보는 link_clicks / visits_daily 와 별개로, 사건마다 시각을 남긴다.
+// 화면에는 안 쓰고 `npm run stats` 로만 들여다본다.
+//
+// 개인정보는 담지 않는다 — IP·쿠키·전체 UA·전체 referrer 를 저장하지 않고
+// 유입 도메인과 기기 종류까지만 남긴다.
+
+export type EventKind = "click" | "visit";
+
+export async function logEvent(e: {
+  kind: EventKind;
+  target?: string;
+  medium?: string;
+  refHost?: string;
+  device?: string;
+}) {
+  if (!hasDb) return; // 폴백에선 이벤트 로그를 남기지 않는다
+  await rest("events", {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify({
+      kind: e.kind,
+      target: e.target ?? "",
+      medium: e.medium ?? "",
+      ref_host: e.refHost ?? "",
+      device: e.device ?? "",
+    }),
+  });
+}
+
+/** referer 헤더에서 도메인만 뽑는다. 전체 URL 은 남기지 않는다. */
+export function refHostOf(referer: string | null): string {
+  if (!referer) return "";
+  try {
+    return new URL(referer).host.slice(0, 120);
+  } catch {
+    return "";
+  }
+}
+
+/** UA 를 mobile / desktop 두 가지로만 뭉갠다. */
+export function deviceOf(ua: string | null): string {
+  if (!ua) return "";
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(ua) ? "mobile" : "desktop";
 }
 
 export type { Comment };

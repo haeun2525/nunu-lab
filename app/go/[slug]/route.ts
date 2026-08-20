@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { findProject, STORE_URL } from "@/lib/projects";
-import { bumpClick } from "@/lib/db";
+import { bumpClick, deviceOf, logEvent, refHostOf } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +35,16 @@ export async function GET(
 
   // 집계 실패가 이동을 막으면 안 된다.
   try {
-    await bumpClick(slug);
+    await Promise.all([
+      bumpClick(slug),
+      logEvent({
+        kind: "click",
+        target: slug,
+        medium: from,
+        refHost: refHostOf(req.headers.get("referer")),
+        device: deviceOf(req.headers.get("user-agent")),
+      }),
+    ]);
   } catch (e) {
     console.error("[go] 클릭 집계 실패", slug, e);
   }

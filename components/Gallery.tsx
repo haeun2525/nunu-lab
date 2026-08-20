@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useLang } from "./LangProvider";
-import type { Project } from "@/lib/projects";
+import { isNew, type Project } from "@/lib/projects";
 
 export default function Gallery({
   projects,
@@ -52,6 +52,7 @@ export default function Gallery({
                 sizes="(max-width: 520px) 100vw, (max-width: 1100px) 33vw, 25vw"
               />
               <span className="badge">{String(p.no).padStart(2, "0")}</span>
+              {isNew(p) && <span className="badge-new">NEW</span>}
               <span className="clicks">↗ {(clicks[p.slug] ?? 0).toLocaleString()}</span>
               <div className="card-t">
                 <h3>{p.title[lang]}</h3>

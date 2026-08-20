@@ -19,8 +19,12 @@ export type Project = {
   tags: string[];
   thumb: string;
   images: string[];
-  /** 인스타 원본 영상. 없으면 버튼이 안 뜬다. */
+  /** 인스타 원본 영상. 없으면 버튼이 안 뜬다.
+   *  지금은 전부 프로필 주소다. 게시물 퍼머링크를 받으면 각각 교체할 것. */
   videoUrl: string | null;
+  /** 저장소에 올린 날(YYYY-MM-DD). 7일 이내면 갤러리에 NEW 뱃지가 붙는다.
+   *  null 이면 초기 등록분이라 뱃지 대상이 아니다. */
+  addedAt: string | null;
   postedAt: string | null; // 인스타 업로드일
   draft: boolean;
 };
@@ -53,6 +57,7 @@ export const PROJECTS: Project[] = [
     thumb: "/thumbs/music-led.jpg",
     images: ["/thumbs/music-led.jpg"],
     videoUrl: "https://www.instagram.com/physical_nunu/",
+    addedAt: null,
     postedAt: "2026-08-11",
     draft: false,
   },
@@ -83,6 +88,7 @@ export const PROJECTS: Project[] = [
     thumb: "/thumbs/launcher.jpg",
     images: ["/thumbs/launcher.jpg"],
     videoUrl: "https://www.instagram.com/physical_nunu/",
+    addedAt: null,
     postedAt: "2026-08-13",
     draft: false,
   },
@@ -113,11 +119,11 @@ export const PROJECTS: Project[] = [
     thumb: "/thumbs/welcome.jpg",
     images: ["/thumbs/welcome.jpg"],
     videoUrl: "https://www.instagram.com/physical_nunu/",
+    addedAt: null,
     postedAt: "2026-08-14",
     draft: false,
   },
   {
-    // 릴스가 아직 안 올라간 건. draft 를 false 로 바꾸고 레포를 public 으로 돌리면 공개된다.
     slug: "together",
     no: 4,
     repo: "haeun2525/nu40dk_together",
@@ -131,15 +137,33 @@ export const PROJECTS: Project[] = [
         ko: "보드가 BLE 페리페럴, 아이폰이 센트럴이다. 신호 세기로 거리를 재서 붙어 있으면 '같이 있어요', 멀어지면 '슬퍼요' 상태로 넘어간다.",
         en: "The board is a BLE peripheral, the phone a central. Signal strength gives distance: close means 'together', far means 'sad'.",
       },
+      {
+        ko: "표정은 다섯 가지다. 평온 · 알아챔 · 불안 · 패닉 · 포기, 그리고 다시 만나면 하트. 거리에 따라 상태가 넘어가고 다이나믹 아일랜드와 위젯에도 그대로 뜬다.",
+        en: "Five faces: calm, noticing, anxious, panic, giving up — plus hearts when you're back together. The state follows the distance and shows up in the Dynamic Island and the widget too.",
+      },
+      {
+        ko: "거리만으로는 연출이 순서대로 안 나온다. 신호 세기가 실내에서 튀기 때문이다. 그래서 상태 전이에 이력(hysteresis)과 최소 유지 시간을 넣었다.",
+        en: "Distance alone won't give you a clean sequence — indoor signal strength jumps around. So the state machine has hysteresis and a minimum dwell time.",
+      },
     ],
     tags: ["Swift", "BLE", "Arduino"],
-    thumb: "/thumbs/welcome.jpg",
-    images: [],
-    videoUrl: null,
-    postedAt: null,
-    draft: true,
+    thumb: "/thumbs/together.jpg",
+    images: ["/thumbs/together.jpg"],
+    videoUrl: "https://www.instagram.com/physical_nunu/",
+    addedAt: "2026-08-20",
+    postedAt: "2026-08-20",
+    draft: false,
   },
 ];
+
+/** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
+export const NEW_DAYS = 7;
+export function isNew(p: Project, now: Date = new Date()): boolean {
+  if (!p.addedAt) return false;
+  const added = new Date(`${p.addedAt}T00:00:00+09:00`);
+  if (Number.isNaN(added.getTime())) return false;
+  return now.getTime() - added.getTime() < NEW_DAYS * 86400_000;
+}
 
 /** 공개된 것만. 갤러리·상세·사이트맵 전부 이걸 쓴다. */
 export const publicProjects = () => PROJECTS.filter((p) => !p.draft);
