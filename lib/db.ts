@@ -8,6 +8,8 @@
  * 폴백은 서버 프로세스가 죽으면 사라진다. 로컬 확인용이지 운영용이 아니다.
  */
 
+import { cookies } from "next/headers";
+
 // 대시보드에서 복사하면 뒤에 /rest/v1/ 이 붙어 오는 경우가 있다. 무엇을 넣든 같게 만든다.
 const URL_ = process.env.SUPABASE_URL?.replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -159,7 +161,7 @@ export async function addComment(input: {
 // 개인정보는 담지 않는다 — IP·쿠키·전체 UA·전체 referrer 를 저장하지 않고
 // 유입 도메인과 기기 종류까지만 남긴다.
 
-export type EventKind = "click" | "visit";
+export type EventKind = "click" | "visit" | "view";
 
 export async function logEvent(e: {
   kind: EventKind;
@@ -167,20 +169,94 @@ export async function logEvent(e: {
   medium?: string;
   refHost?: string;
   device?: string;
+  source?: string;
+  campaign?: string;
+  content?: string;
+  path?: string;
+  session?: string;
 }) {
   if (!hasDb) return; // 폴백에선 이벤트 로그를 남기지 않는다
-  await rest("events", {
-    method: "POST",
-    headers: { Prefer: "return=minimal" },
-    body: JSON.stringify({
-      kind: e.kind,
-      target: e.target ?? "",
-      medium: e.medium ?? "",
-      ref_host: e.refHost ?? "",
-      device: e.device ?? "",
-    }),
-  });
+
+  const legacy = {
+    kind: e.kind,
+    target: e.target ?? "",
+    medium: e.medium ?? "",
+    ref_host: e.refHost ?? "",
+    device: e.device ?? "",
+  };
+  const full = {
+    ...legacy,
+    kind: e.kind,
+    source: e.source ?? "",
+    campaign: e.campaign ?? "",
+    content: e.content ?? "",
+    path: e.path ?? "",
+    session: e.session ?? "",
+  };
+
+  const post = (body: object) =>
+    rest("events", {
+      method: "POST",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify(body),
+    });
+
+  try {
+    await post(full);
+  } catch (err) {
+    // 005_events_context.sql 을 아직 안 돌린 DB. 방문 집계까지 같이 죽으면 안 되니
+    // 예전 모양으로 한 번 더 넣는다. view 는 예전 표가 모르는 값이라 그냥 버린다.
+    if (e.kind === "view") return;
+    console.warn("[events] 새 칸 없이 저장한다 — supabase/005_events_context.sql 을 실행할 것", err);
+    await post(legacy);
+  }
 }
+
+/**
+ * 들른 동안의 이동을 이어 보기 위한 30분짜리 임시 난수.
+ *
+ * 사람을 알아보는 값이 아니다 — 30분 쉬면 같은 사람도 다른 값이 되고,
+ * 날짜를 넘겨 이어 붙일 수 없다. IP·UA 같은 건 여전히 저장하지 않는다.
+ */
+const SESSION_COOKIE = "nunu_s";
+const SESSION_MINUTES = 30;
+
+export async function sessionId(): Promise<string> {
+  const jar = await cookies();
+  const id = jar.get(SESSION_COOKIE)?.value?.slice(0, 24) || randomKey();
+  // 움직일 때마다 30분을 다시 채운다 (미끄러지는 만료)
+  jar.set(SESSION_COOKIE, id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: SESSION_MINUTES * 60,
+    path: "/",
+  });
+  return id;
+}
+
+const randomKey = () =>
+  Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) =>
+    b.toString(36).padStart(2, "0"),
+  ).join("");
+
+/** 사이트 안에서 넘어온 건 유입이 아니다. 밖에서 온 것만 도메인을 남긴다. */
+export function externalRefHost(referrer: string, req: Request): string {
+  const host = refHostOf(referrer);
+  if (!host) return "";
+  const self = (req.headers.get("host") ?? "").toLowerCase();
+  return host.toLowerCase() === self ? "" : host;
+}
+
+/** 경로만 남긴다. 쿼리스트링·해시는 떼고 길이도 자른다. */
+export function safePath(raw: unknown): string {
+  if (typeof raw !== "string" || !raw.startsWith("/")) return "";
+  return raw.split(/[?#]/)[0].slice(0, 120);
+}
+
+/** UTM 값 다듬기. 없는 건 빈 문자열. */
+export const tag = (v: unknown) =>
+  typeof v === "string" ? v.trim().slice(0, 60).replace(/[^\w.:/-]/g, "") : "";
 
 /** referer 헤더에서 도메인만 뽑는다. 전체 URL 은 남기지 않는다. */
 export function refHostOf(referer: string | null): string {

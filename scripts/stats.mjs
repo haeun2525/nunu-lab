@@ -49,6 +49,7 @@ const arg = (name, fallback) => {
   return i >= 0 && argv[i + 1] ? argv[i + 1] : fallback;
 };
 const DAYS = Number(arg("days", 30));
+const FLOW = argv.includes("--flow");
 const BY = arg("by", "");
 const KIND = arg("kind", "");
 
@@ -108,7 +109,15 @@ const bucket = (r) => {
     case "medium":
       return r.medium || "(없음)";
     case "ref":
-      return r.ref_host || "(직접 유입)";
+      return r.ref_host || "(안 남음)";
+    case "source":
+      return r.source || "(모름)";
+    case "campaign":
+      return r.campaign || "(없음)";
+    case "content":
+      return r.content || "(없음)";
+    case "path":
+      return r.path || "(모름)";
     case "device":
       return r.device || "(모름)";
     default:
@@ -148,13 +157,47 @@ function table(title, m, { sortByKey = false } = {}) {
 // ── 출력 ────────────────────────────────────────────────
 const clicks = rows.filter((r) => r.kind === "click");
 const visits = rows.filter((r) => r.kind === "visit");
+const views = rows.filter((r) => r.kind === "view");
 
 console.log("═".repeat(52));
 console.log(`  누누랩 집계 — 최근 ${DAYS}일 (KST 기준)`);
-console.log(`  방문 ${visits.length}  ·  외부 이동 ${clicks.length}`);
+console.log(
+  `  방문 ${visits.length}  ·  페이지 열람 ${views.length}  ·  외부 이동 ${clicks.length}`,
+);
 console.log("═".repeat(52));
 
-if (BY) {
+if (FLOW) {
+  // 한 번 들른 동안(30분)의 이동을 한 줄로 잇는다. session 은 30분짜리 임시 난수다.
+  const bySession = new Map();
+  for (const r of rows) {
+    if (!r.session) continue;
+    if (!bySession.has(r.session)) bySession.set(r.session, []);
+    bySession.get(r.session).push(r);
+  }
+  if (bySession.size === 0) {
+    console.log("\n(이동 기록이 아직 없다. 005_events_context.sql 실행 후 쌓인 것부터 보인다)");
+  }
+  const sessions = [...bySession.values()].sort(
+    (a, b) => new Date(b[0].created_at) - new Date(a[0].created_at),
+  );
+  for (const evs of sessions.slice(0, 40)) {
+    const first = KST(evs[0].created_at);
+    const last = KST(evs[evs.length - 1].created_at);
+    const secs = Math.round((last - first) / 1000);
+    const stay = secs >= 60 ? `${Math.floor(secs / 60)}분 ${secs % 60}초` : `${secs}초`;
+    const from = evs.find((e) => e.source)?.source || "(모름)";
+    const trail = evs
+      .map((e) => (e.kind === "click" ? `→ 나감:${e.target}` : e.path || "?"))
+      .filter((v, i, a) => v !== a[i - 1]) // 같은 페이지 연속은 접는다
+      .join("  ");
+    console.log(
+      `\n  ${first.toISOString().slice(5, 16).replace("T", " ")}  ${evs[0].device || "?"}  ` +
+        `유입:${from}  머문시간:${stay}`,
+    );
+    console.log(`    ${trail}`);
+  }
+  console.log("");
+} else if (BY) {
   if (!KIND) {
     table(`■ 방문 — ${BY}별`, tally(visits, bucket), {
       sortByKey: ["season", "month", "week", "day", "hour"].includes(BY),
@@ -177,11 +220,18 @@ if (BY) {
     sortByKey: true,
   });
   table("■ 요일", tally(rows, (r) => WEEKDAY[KST(r.created_at).getUTCDay()]));
-  table("■ 유입 경로", tally(rows, (r) => r.ref_host || "(직접 유입)"));
+  // 유입원은 utm 이 있으면 그 값, 없으면 밖에서 온 도메인. 둘 다 없으면 모른다.
+  // 예전(005 이전) 기록은 이 칸이 통째로 비어 있어서 전부 (모름) 으로 잡힌다.
+  table("■ 어디서 왔나", tally(visits, (r) => r.source || "(모름)"));
+  table("■ 어느 영상/링크로 왔나", tally(visits, (r) => r.content || r.campaign || "(태그 없음)"));
+  table("■ 처음 연 페이지", tally(visits, (r) => r.path || "(모름)"));
+  table("■ 많이 본 페이지", tally(views, (r) => r.path || "(모름)"));
   table("■ 기기", tally(rows, (r) => r.device || "(모름)"));
 
   const conv = visits.length ? ((clicks.length / visits.length) * 100).toFixed(1) : "0.0";
   console.log(`\n■ 방문 대비 외부 이동  ${conv}%`);
-  console.log("\n더 볼 것:  npm run stats -- --by season|month|week|day|hour|weekday");
+  console.log(
+    "\n더 볼 것:  npm run stats -- --by source|content|path|day|hour|device   ·   --flow (이동 경로)",
+  );
 }
 console.log("");

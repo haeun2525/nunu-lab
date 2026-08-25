@@ -56,6 +56,42 @@ Supabase 는 클라이언트 라이브러리 없이 PostgREST 를 `fetch` 로 �
 
 방문자수는 쿠키로 **하루 한 번만** 센다. → [`app/api/visit/route.ts`](app/api/visit/route.ts)
 
+## 어디서 왔는지 알아내기
+
+**서버가 받는 `referer` 로는 유입원을 알 수 없다.** `VisitPing` 이 사이트 안에서 `/api/visit` 를
+부르기 때문에 항상 우리 도메인이 찍힌다. 그래서 클라이언트가 `document.referrer` 와 주소창의
+`utm_*` 를 직접 실어 보낸다. `/go` 링크도 `rel="noopener noreferrer"` 라 referer 가 안 남는다.
+
+**referrer 보다 UTM 이 정확하다.** 인스타 앱 안 브라우저는 referrer 를 안 보내는 경우가 많다.
+프로필 링크를 이렇게 걸어 두면 확정값으로 잡힌다.
+
+```
+https://nunu-lab.vercel.app/?utm_source=instagram&utm_medium=bio
+https://nunu-lab.vercel.app/?utm_source=instagram&utm_medium=bio&utm_content=lyrics
+                                                              ↑ 지금 미는 영상. 바꿔 달면 그 영상 몫이 갈린다
+```
+
+`utm_content` 는 릴스를 새로 올릴 때마다 갈아 끼우는 칸이다. 인스타는 게시물마다 링크를 못 다니까,
+**프로필 링크의 `utm_content` 를 그때그때 바꾸는 게 사실상 유일한 방법이다.**
+
+## 한 번 들른 동안의 이동 보기
+
+```bash
+npm run stats -- --flow
+```
+
+```
+08-25 10:28  desktop  유입:instagram  머문시간:36초
+  /  /repo  /repo/lyrics  → 나감:lyrics
+```
+
+`session` 은 **30분짜리 임시 난수**다. 30분 쉬면 같은 사람도 다른 값이 되고 날짜를 넘겨 이어
+붙일 수 없다. 개인 식별자가 아니고, IP·전체 UA·전체 referrer 는 **여전히 저장하지 않는다.**
+
+쓰려면 [`supabase/005_events_context.sql`](supabase/005_events_context.sql) 을 한 번 실행해야 한다.
+안 돌린 상태에서도 사이트와 방문 집계는 그대로 돈다 — 새 칸이 없으면 예전 모양으로 넣고
+페이지 이동 기록만 버린다. → `logEvent()` 안의 폴백
+
 ## 운영자 모드 — 문구를 화면에서 고치기
 
 화면 오른쪽 아래 구석에 점이 하나 있다. 눌러서 PIN(`.env.local` 의 `ADMIN_PASSWORD`)을 넣으면

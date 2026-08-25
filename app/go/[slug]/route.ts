@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { findProject, STORE_URL } from "@/lib/projects";
-import { bumpClick, deviceOf, logEvent, refHostOf, shouldCount } from "@/lib/db";
+import {
+  bumpClick,
+  deviceOf,
+  logEvent,
+  refHostOf,
+  sessionId,
+  shouldCount,
+} from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +51,9 @@ export async function GET(
         medium: from,
         refHost: refHostOf(req.headers.get("referer")),
         device: deviceOf(req.headers.get("user-agent")),
+        // 이동 기록의 끝. 세션 흐름에서 "여기서 밖으로 나갔다" 로 읽힌다
+        path: `/go/${slug}`,
+        session: await sessionId(),
       }),
     ]);
   } catch (e) {
