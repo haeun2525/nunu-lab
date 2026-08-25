@@ -44,10 +44,13 @@ async function rest(path: string, init?: RequestInit) {
       ...(init?.headers ?? {}),
     },
   });
+  const text = await res.text();
   if (!res.ok) {
-    throw new Error(`supabase ${res.status} ${path}: ${await res.text()}`);
+    throw new Error(`supabase ${res.status} ${path}: ${text}`);
   }
-  return res.status === 204 ? null : res.json();
+  // 본문 없는 응답이 여럿이다 — DELETE 는 204, `Prefer: return=minimal` 인 INSERT 는
+  // 201 인데 본문이 비어 있다. 204 만 걸러내면 201 에서 JSON.parse 가 터진다.
+  return text ? JSON.parse(text) : null;
 }
 
 /**
