@@ -180,18 +180,50 @@ export const PROJECTS: Project[] = [
         ko: "소리도 일부러 옛날 라디오처럼 만들었어요. 살짝 지직거리고 물먹은 듯한 톤인데, 얼마나 낡은 소리로 들을지는 취향껏 조절할 수 있습니다.",
         en: "The sound is deliberately old-radio: a little crackly and washed out. How worn it sounds is up to you.",
       },
-      {
-        ko: "노래 대신 춤추는 영상을 넣으면 화면 속 사람이 그 춤을 따라 춥니다. 같은 화면으로 만든 다른 모드예요.",
-        en: "Feed it a dance video instead of a song and the figure on screen copies the moves — the same screen, a different mode.",
-      },
     ],
     tags: ["Python", "Arduino", "OLED", "macOS"],
     thumb: "/thumbs/lyrics.jpg",
     images: ["/thumbs/lyrics.jpg"],
-    // 릴스는 아직 안 올라갔다. 올리면 운영자 모드 ✎ 로 영상 링크를 채우면 된다.
-    videoUrl: null,
+    videoUrl: "https://www.instagram.com/p/DcckwwyyVjF/",
     addedAt: "2026-08-20",
-    postedAt: "2026-08-20",
+    // 미리 박아 뒀던 날짜를 실제 올라간 날로 고쳤다
+    postedAt: "2026-08-25",
+    draft: false,
+  },
+  {
+    slug: "motion",
+    no: 6,
+    // 가사 디스플레이와 같은 저장소다. 같은 화면을 쓰는 다른 모드라서.
+    repo: "haeun2525/nu40-lyrics",
+    title: { ko: "NU40DK 댄스 모드", en: "NU40DK Dance Mode" },
+    tagline: {
+      ko: "춤추는 영상을 넣으면, 손바닥만 한 화면 속 형체가 그 춤을 따라 춥니다.",
+      en: "Feed it a dance clip and the figure on the little screen copies the moves.",
+    },
+    body: [
+      {
+        ko: "좋아하는 무대 영상을 넣으면 화면 속 형체가 같은 춤을 춥니다. 게임에 나오는 춤추는 그림자 같은 거예요. 아래 막대는 노래에 맞춰 계속 오르내리고요.",
+        en: "Drop in a stage clip and the figure on screen dances along — like the dancing silhouette in rhythm games. The bars underneath keep bouncing to the song.",
+      },
+      {
+        ko: "다리는 일부러 안 그립니다. 숏폼 안무는 화면에 다리가 아예 안 들어오는 경우가 많은데, 그걸 억지로 그리면 있지도 않은 동작을 지어내게 되거든요. 머리·어깨·팔꿈치·손목·골반 아홉 군데만 따라갑니다.",
+        en: "The legs are left out on purpose. Short-form choreo often crops them out entirely, and drawing them anyway means inventing moves that were never there. It follows nine points instead — head, shoulders, elbows, wrists, hips.",
+      },
+      {
+        ko: "무거운 계산은 노트북이 미리 한 번만 합니다. 영상에서 동작을 뽑아 좌표로 저장해 두고, 재생할 때는 그 좌표만 흘려보내요. 보드는 받은 대로 그리기만 합니다.",
+        en: "The heavy lifting happens once, up front. The laptop pulls the motion out of the video and saves it as coordinates; playback just streams those. The board only draws what it's handed.",
+      },
+      {
+        ko: "가사 디스플레이와 같은 화면, 같은 저장소입니다. 노래를 넣으면 가사가 뜨고, 춤 영상을 넣으면 춤을 춥니다.",
+        en: "Same screen, same repo as the lyrics display. Give it a song and you get lyrics; give it a dance clip and it dances.",
+      },
+    ],
+    tags: ["Python", "MediaPipe", "Arduino", "OLED"],
+    thumb: "/thumbs/motion.jpg",
+    images: ["/thumbs/motion.jpg"],
+    videoUrl: "https://www.instagram.com/p/Dccw2GrS_YJ/",
+    addedAt: "2026-08-25",
+    postedAt: "2026-08-25",
     draft: false,
   },
 ];
