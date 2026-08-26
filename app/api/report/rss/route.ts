@@ -5,6 +5,8 @@ export const dynamic = "force-dynamic";
 
 const SITE = "nunu-lab.vercel.app";
 const DAYS = 7;
+/** 하루치를 몇 시(한국시간)에 내보낼지. 이 시각이 지나야 어제치가 피드에 뜬다. */
+const PUBLISH_HOUR = 9;
 
 /**
  * 최근 며칠치 리포트를 RSS 로 내보낸다.
@@ -19,12 +21,23 @@ const DAYS = 7;
  */
 export async function GET(req: Request) {
   const origin = new URL(req.url).origin;
+  const now = Date.now();
+  const kstNow = new Date(now + 9 * 3600e3);
   const today = kstDate();
+
+  // 어제치는 오늘 09시(KST)가 지나야 내보낸다.
+  // RSS 트리거는 "새 항목이 뜨는 순간" 도는데, 그 순간이 곧 리포트가 오는 시각이 된다.
+  const skipYesterday = kstNow.getUTCHours() < PUBLISH_HOUR;
+
   const days: string[] = [];
-  for (let i = 1; i <= DAYS; i++) {
+  for (let i = skipYesterday ? 2 : 1; days.length < DAYS; i++) {
     days.push(kstDate(new Date(new Date(`${today}T00:00:00Z`).getTime() - i * 86400e3)));
   }
   days.reverse(); // 오래된 날부터 훑어야 '새 방문자' 판정이 맞다
+
+  /** 그 날짜가 피드에 나타난 시각 = 다음 날 09시(KST) = 그 전날 00시 UTC. */
+  const publishedAt = (day: string) =>
+    new Date(new Date(`${day}T00:00:00.000Z`).getTime() + 86400e3 + (PUBLISH_HOUR - 9) * 3600e3);
 
   const oldest = kstRange(days[0]);
   const [all, before] = await Promise.all([
@@ -44,7 +57,7 @@ export async function GET(req: Request) {
       <title>${reportSubject(report, SITE).replace(/&/g, "&amp;").replace(/</g, "&lt;")}</title>
       <link>${origin}/insight?day=${day}</link>
       <guid isPermaLink="false">${SITE}-${day}</guid>
-      <pubDate>${new Date(`${day}T00:00:00.000Z`).toUTCString()}</pubDate>
+      <pubDate>${publishedAt(day).toUTCString()}</pubDate>
       <description><![CDATA[${reportHtml(report, SITE, origin)}]]></description>
     </item>`);
   }
