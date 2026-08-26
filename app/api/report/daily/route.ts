@@ -1,6 +1,16 @@
 import { hasAdminCookie } from "@/lib/admin";
 import { eventsBetween, visitorsBefore } from "@/lib/db";
-import { buildReport, kstRange, yesterdayKst, type DayReport } from "@/lib/report";
+import {
+  buildReport,
+  kstRange,
+  mmss,
+  reportHtml,
+  reportSubject,
+  yesterdayKst,
+  type DayReport,
+} from "@/lib/report";
+
+const SITE = "nunu-lab.vercel.app";
 
 export const dynamic = "force-dynamic";
 
@@ -35,26 +45,58 @@ export async function GET(req: Request) {
 
   if (url.searchParams.get("dry")) return Response.json(report);
 
-  const hook = process.env.TEAMS_WEBHOOK_URL;
-  if (!hook) {
-    return Response.json(
-      { sent: false, why: "TEAMS_WEBHOOK_URL 이 없다", report },
-      { status: 200 },
-    );
-  }
+  // 보낼 곳은 둘 다 선택이다. 하나만 설정해도 되고 둘 다 설정하면 둘 다 간다.
+  const [teams, email] = await Promise.all([
+    sendTeams(report, url.origin),
+    sendEmail(report, url.origin),
+  ]);
 
-  const res = await fetch(hook, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(teamsCard(report, url.origin)),
-  });
-  const text = await res.text();
-
-  return Response.json({ sent: res.ok, status: res.status, body: text.slice(0, 300), day });
+  const ok = teams.sent || email.sent;
+  return Response.json({ sent: ok, day, teams, email }, { status: ok ? 200 : 200 });
 }
 
-const mmss = (s: number) =>
-  s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;
+/** Teams 채널 웹훅(Power Automate 워크플로). 없으면 조용히 건너뛴다. */
+async function sendTeams(report: DayReport, origin: string) {
+  const hook = process.env.TEAMS_WEBHOOK_URL;
+  if (!hook) return { sent: false, why: "TEAMS_WEBHOOK_URL 없음" };
+  try {
+    const res = await fetch(hook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(teamsCard(report, origin)),
+    });
+    const text = await res.text();
+    return { sent: res.ok, status: res.status, body: text.slice(0, 200) };
+  } catch (e) {
+    return { sent: false, why: String(e).slice(0, 200) };
+  }
+}
+
+/**
+ * 이메일(Resend). 도메인을 안 붙였으면 보내는 주소는 onboarding@resend.dev 로 두고
+ * 받는 주소는 Resend 계정에 등록된 그 주소여야 한다. 도메인을 붙이면 REPORT_EMAIL_FROM 을 바꾸면 된다.
+ */
+async function sendEmail(report: DayReport, origin: string) {
+  const key = process.env.RESEND_API_KEY;
+  const to = process.env.REPORT_EMAIL_TO;
+  if (!key || !to) return { sent: false, why: "RESEND_API_KEY / REPORT_EMAIL_TO 없음" };
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: process.env.REPORT_EMAIL_FROM || "리포트 <onboarding@resend.dev>",
+        to: to.split(",").map((x) => x.trim()).filter(Boolean),
+        subject: reportSubject(report, SITE),
+        html: reportHtml(report, SITE, origin),
+      }),
+    });
+    const text = await res.text();
+    return { sent: res.ok, status: res.status, body: text.slice(0, 200) };
+  } catch (e) {
+    return { sent: false, why: String(e).slice(0, 200) };
+  }
+}
 
 const list = (rows: [string, number][], n = 5) =>
   rows.slice(0, n).map(([k, v]) => `${k} ${v}`).join(" · ") || "없음";
@@ -83,7 +125,7 @@ function teamsCard(r: DayReport, origin: string) {
 
   const body: unknown[] = [
     { type: "TextBlock", size: "Large", weight: "Bolder", text: `📊 ${r.day} 방문 리포트` },
-    { type: "TextBlock", isSubtle: true, wrap: true, text: "nunu-lab.vercel.app" },
+    { type: "TextBlock", isSubtle: true, wrap: true, text: "howcanisayit.vercel.app" },
     { type: "FactSet", facts },
   ];
 
