@@ -185,7 +185,7 @@ const rows = (list: [string, number][], n = 6) =>
   list.slice(0, n).map(([k, v]) => `${esc(k)} <b>${v}</b>`).join(" · ") || "없음";
 
 /** 아웃룩에서도 안 깨지게 표와 인라인 스타일만 쓴다. flex·grid 는 못 쓴다. */
-export function reportHtml(r: DayReport, site: string, origin: string) {
+export function reportHtml(r: DayReport, site: string, origin: string, maxJourneys = 40) {
   const num = (label: string, value: string, sub = "") => `
     <td style="padding:10px 14px;border:1px solid #e6e6e6;border-radius:8px;vertical-align:top">
       <div style="font:11px -apple-system,sans-serif;color:#888">${label}</div>
@@ -201,7 +201,7 @@ export function reportHtml(r: DayReport, site: string, origin: string) {
 
   const journeys = r.journeys
     .filter((j) => j.steps.length > 1 || j.clicks.length)
-    .slice(0, 8)
+    .slice(0, maxJourneys)
     .map((j) => {
       const path = [...j.steps, ...j.clicks.map((c) => `→ ${c}`)].map(esc).join(" › ");
       const meta = [j.device, j.place, j.source, j.utm].filter(Boolean).map(esc).join(" · ");
@@ -238,7 +238,7 @@ export function reportHtml(r: DayReport, site: string, origin: string) {
     ${line("나간 클릭", rows(r.clickTargets))}
   </table>
 
-  ${journeys ? `<div style="font:700 13px -apple-system,sans-serif;color:#111;margin-top:22px">눈여겨볼 여정</div>
+  ${journeys ? `<div style="font:700 13px -apple-system,sans-serif;color:#111;margin-top:22px">여정 (한 장만 보고 나간 것 제외) — ${r.journeys.filter((j) => j.steps.length > 1 || j.clicks.length).length}건</div>
   <table role="presentation" style="width:100%;border-collapse:collapse">${journeys}</table>` : ""}
 
   ${r.gaps.length ? `<div style="margin-top:20px;padding:12px 14px;background:#fff8e6;border-left:3px solid #f0a500">
@@ -246,9 +246,7 @@ export function reportHtml(r: DayReport, site: string, origin: string) {
     ${r.gaps.map((g) => `<div style="font:12px -apple-system,sans-serif;color:#5c4300;padding-top:5px">• ${esc(g)}</div>`).join("")}
   </div>` : ""}
 
-  <div style="margin-top:22px">
-    <a href="${origin}/insight?day=${r.day}" style="font:600 13px -apple-system,sans-serif;color:#111">대시보드에서 전부 보기 →</a>
-  </div>
+
   <div style="font:11px -apple-system,sans-serif;color:#aaa;margin-top:14px;line-height:1.7">
     사람 수는 IP 해시로 셉니다. 같은 집·회사에서 오면 한 사람으로 뭉치고 통신사 IP 가 바뀌면 둘로 갈립니다 —
     정확한 인원이 아니라 추세로 보세요. IP 원문은 저장하지 않습니다.
@@ -377,7 +375,10 @@ export function combinedHtml(c: Combined, origin: string) {
 
   return `<div style="max-width:680px;margin:0 auto;padding:22px 18px;background:#fff">
     ${head}
-    <div style="margin-top:14px"><a href="${origin}/insight?day=${c.day}" style="font:600 13px -apple-system,sans-serif;color:#111">대시보드에서 전부 보기 →</a></div>
+    <div style="font:11px -apple-system,sans-serif;color:#999;margin-top:12px;line-height:1.7">
+      이 메일 한 통에 그날 것이 전부 들어 있습니다 — 회사망에서 대시보드가 막혀도 여기서 다 보입니다.
+      열 수 있는 곳에서 더 보시려면 <a href="${origin}/insight?day=${c.day}" style="color:#666">대시보드</a>.
+    </div>
     ${per}
   </div>`;
 }
