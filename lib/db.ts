@@ -8,7 +8,10 @@
  * 폴백은 서버 프로세스가 죽으면 사라진다. 로컬 확인용이지 운영용이 아니다.
  */
 
+import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
+import { hasAdminCookie } from "./admin";
+import type { Ev } from "./report";
 
 // 대시보드에서 복사하면 뒤에 /rest/v1/ 이 붙어 오는 경우가 있다. 무엇을 넣든 같게 만든다.
 const URL_ = process.env.SUPABASE_URL?.replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
@@ -164,7 +167,7 @@ export async function addComment(input: {
 // 개인정보는 담지 않는다 — IP·쿠키·전체 UA·전체 referrer 를 저장하지 않고
 // 유입 도메인과 기기 종류까지만 남긴다.
 
-export type EventKind = "click" | "visit" | "view";
+export type EventKind = "click" | "visit" | "view" | "leave";
 
 export async function logEvent(e: {
   kind: EventKind;
@@ -177,6 +180,11 @@ export async function logEvent(e: {
   content?: string;
   path?: string;
   session?: string;
+  ipHash?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+  ms?: number;
 }) {
   if (!hasDb) return; // 폴백에선 이벤트 로그를 남기지 않는다
 
@@ -195,6 +203,11 @@ export async function logEvent(e: {
     content: e.content ?? "",
     path: e.path ?? "",
     session: e.session ?? "",
+    ip_hash: e.ipHash ?? "",
+    country: e.country ?? "",
+    region: e.region ?? "",
+    city: e.city ?? "",
+    ms: e.ms ?? 0,
   };
 
   const post = (body: object) =>
@@ -204,14 +217,22 @@ export async function logEvent(e: {
       body: JSON.stringify(body),
     });
 
+  // 새 칸이 없는 DB 여도 집계 전체가 멎으면 안 된다. 새 모양 → 그 전 모양 → 맨 처음 모양 순으로 물러난다.
+  const withCtx = { ...full } as Record<string, unknown>;
+  for (const k of ["ip_hash", "country", "region", "city", "ms"]) delete withCtx[k];
+
   try {
     await post(full);
   } catch (err) {
-    // 005_events_context.sql 을 아직 안 돌린 DB. 방문 집계까지 같이 죽으면 안 되니
-    // 예전 모양으로 한 번 더 넣는다. view 는 예전 표가 모르는 값이라 그냥 버린다.
-    if (e.kind === "view") return;
-    console.warn("[events] 새 칸 없이 저장한다 — supabase/005_events_context.sql 을 실행할 것", err);
-    await post(legacy);
+    console.warn("[events] 006_visitor.sql 을 아직 안 돌린 것 같다 — 새 칸 없이 저장한다", err);
+    try {
+      await post(withCtx);
+    } catch (err2) {
+      // 005 도 안 돌린 DB. view·leave 는 예전 표가 모르는 값이라 그냥 버린다.
+      if (e.kind === "view" || e.kind === "leave") return;
+      console.warn("[events] 005_events_context.sql 도 안 돌린 것 같다", err2);
+      await post(legacy);
+    }
   }
 }
 
@@ -422,3 +443,66 @@ export function isLocalRequest(req: Request): boolean {
 }
 
 export type { Comment };
+
+// ── 방문자 구분 (IP 해시) · 지역 ────────────────────────────────
+//
+// IP 원문은 어디에도 저장하지 않는다. 소금값을 섞어 해시한 앞 16자만 남긴다.
+// 목적은 "같은 사람이 또 왔는가" 하나뿐이고, 이 값으로 IP 를 되돌릴 수는 없다.
+
+function ipOf(req: Request): string {
+  const fwd = req.headers.get("x-forwarded-for") ?? "";
+  const first = fwd.split(",")[0]?.trim();
+  return first || req.headers.get("x-real-ip") || "";
+}
+
+export function visitorHash(req: Request): string {
+  const salt = process.env.ANALYTICS_SALT;
+  const ip = ipOf(req);
+  // 소금값이 없으면 아예 안 남긴다 — 소금 없는 해시는 IP 를 되맞춰 볼 수 있어서 위험하다
+  if (!salt || !ip) return "";
+  return createHash("sha256").update(`${salt}:${ip}`).digest("hex").slice(0, 16);
+}
+
+/** Vercel 이 붙여 주는 위치 헤더. 도시까지만 받는다. */
+export function geoOf(req: Request) {
+  const get = (k: string) => {
+    const v = req.headers.get(k);
+    if (!v) return "";
+    try {
+      return decodeURIComponent(v).slice(0, 60);
+    } catch {
+      return v.slice(0, 60);
+    }
+  };
+  return {
+    country: get("x-vercel-ip-country"),
+    region: get("x-vercel-ip-country-region"),
+    city: get("x-vercel-ip-city"),
+  };
+}
+
+/** 내 접속인가. 운영자 쿠키 또는 Vercel 대시보드에서 넘어온 것. */
+export async function isOwnVisit(req: Request, clientReferrer = ""): Promise<boolean> {
+  if (await hasAdminCookie().catch(() => false)) return true;
+  const hosts = [refHostOf(req.headers.get("referer")), refHostOf(clientReferrer)];
+  return hosts.some((h) => h === "vercel.com" || h.endsWith(".vercel.com"));
+}
+
+// ── 하루치 이벤트 읽기 (대시보드 · 매일 리포트) ────────────────
+
+/** 한 구간의 이벤트를 전부. 화면에 쓰는 게 아니라 집계용이라 정렬만 맞춘다. */
+export async function eventsBetween(fromIso: string, toIso: string): Promise<Ev[]> {
+  if (!hasDb) return [];
+  return (await rest(
+    `events?select=*&created_at=gte.${fromIso}&created_at=lt.${toIso}&order=created_at&limit=20000`,
+  )) as Ev[];
+}
+
+/** 그 시각 이전에 이미 나온 방문자 해시들 (재방문 판정용). */
+export async function visitorsBefore(beforeIso: string): Promise<Set<string>> {
+  if (!hasDb) return new Set();
+  const rows = (await rest(
+    `events?select=ip_hash&ip_hash=neq.&created_at=lt.${beforeIso}&limit=20000`,
+  )) as { ip_hash: string }[];
+  return new Set(rows.map((r) => r.ip_hash));
+}

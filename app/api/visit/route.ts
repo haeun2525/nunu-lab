@@ -9,6 +9,9 @@ import {
   sessionId,
   shouldCount,
   tag,
+  isOwnVisit,
+  visitorHash,
+  geoOf,
 } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -35,8 +38,12 @@ export async function POST(req: Request) {
     /* 본문 없이 와도 방문 집계는 한다 */
   }
 
+  const referrer = String(body.ref ?? "");
+  // 내 접속(운영자 모드 · Vercel 대시보드에서 열기)은 아예 안 센다
+  if (await isOwnVisit(req, referrer)) return Response.json({ counted: false, why: "own" });
+
   const utm = (body.utm ?? {}) as Record<string, unknown>;
-  const refHost = externalRefHost(String(body.ref ?? ""), req);
+  const refHost = externalRefHost(referrer, req);
   const ctx = {
     // utm 이 있으면 그걸 믿는다. 없으면 밖에서 온 도메인, 그것도 없으면 빈 값.
     source: tag(utm.source) || refHost,
@@ -47,7 +54,22 @@ export async function POST(req: Request) {
     refHost,
     device: deviceOf(req.headers.get("user-agent")),
     session: await sessionId(),
+    ipHash: visitorHash(req),
+    ...geoOf(req),
   };
+
+  // 떠날 때 온 신호. 방문 판정은 건드리지 않고 체류시간만 남긴다.
+  if (body.leave) {
+    const ms = Math.min(Math.max(Number(body.ms) || 0, 0), 1000 * 60 * 60);
+    if (ms >= 300) {
+      try {
+        await logEvent({ kind: "leave", ms, ...ctx });
+      } catch (e) {
+        console.error("[visit] 체류시간 기록 실패", e);
+      }
+    }
+    return Response.json({ ok: true });
+  }
 
   const jar = await cookies();
   const today = kstDate(); // DB 와 같은 한국시간 기준이어야 한다

@@ -149,3 +149,20 @@ npm run stats -- --flow
 ## 만든 것들
 
 Next.js 16 (App Router) · Supabase(PostgREST) · Galmuri · Pretendard
+
+## 대시보드와 매일 리포트 (2026-08-26 추가)
+
+* `/insight` — 운영자 전용. 그날의 사람 수(새/재방문) · 방문 · 체류시간 중앙값 ·
+  한 장만 보고 나간 비율 · 유입 · 지역 · 기기 · 페이지 · 클릭, 그리고 **여정 전부**를 보여 준다
+* 매일 09시(KST)에 `vercel.json` 크론이 `/api/report/daily` 를 불러 어제치를 Teams 로 보낸다
+* `?day=2026-08-25` 로 날짜 지정, `?dry=1` 이면 보내지 않고 JSON 만 본다
+* **집계는 `lib/report.ts` 하나만 쓴다** — 화면과 리포트가 다른 숫자를 말하면 둘 다 못 믿는다
+
+**방문자 구분은 IP 해시로 한다.** IP 원문은 저장하지 않고 `ANALYTICS_SALT` 를 섞은
+sha256 앞 16자만 남긴다. 해시로 IP 를 되돌릴 수 없고, 소금값을 갈면 이전 기록과 사람이 안 이어진다.
+howcanisayit 과는 **일부러 다른 소금값**을 쓴다 — 같으면 두 사이트 방문자가 서로 이어져 버린다.
+
+**내 접속은 안 센다.** 운영자 쿠키가 있거나 referer 가 `vercel.com` 이면 `isOwnVisit` 이 걸러낸다.
+
+새 칸은 `supabase/006_visitor.sql` 을 SQL Editor 에 붙여넣어야 생긴다.
+안 돌려도 집계가 멎지는 않는다 — 새 모양 → 그 전 모양 → 맨 처음 모양 순으로 물러나 저장한다.
