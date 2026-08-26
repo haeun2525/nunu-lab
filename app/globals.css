@@ -1626,3 +1626,8 @@ a.nb:hover,
 .ins-tag { margin-left: 8px; font-family: var(--f-small); font-size: 9px; border: 1px solid var(--v); color: var(--v); border-radius: 999px; padding: 2px 7px; }
 .ins-steps { font-family: var(--f-num); font-size: 11px; line-height: 1.9; color: var(--ink-2); word-break: break-all; margin-top: 4px; }
 .ins-meta { font-size: 11px; color: var(--faint); margin-top: 4px; }
+
+/* 합본 대시보드 — 사이트별 묶음 */
+.ins-site { margin-top: 34px; padding-top: 20px; border-top: 2px solid var(--line-2); }
+.ins-site-h { font-family: var(--f-disp); font-size: 17px; color: var(--ink); border: 0; padding: 0; margin-bottom: 14px; }
+.ins-site-h span { font-family: var(--f-small); font-size: 10px; color: var(--faint); margin-left: 8px; }

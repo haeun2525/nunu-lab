@@ -490,19 +490,35 @@ export async function isOwnVisit(req: Request, clientReferrer = ""): Promise<boo
 
 // ── 하루치 이벤트 읽기 (대시보드 · 매일 리포트) ────────────────
 
+/**
+ * 두 사이트가 **같은 Supabase 프로젝트**에 산다. 표 이름만 다르다.
+ * 그래서 여기 한 곳에서 둘 다 읽어 하나의 대시보드로 합칠 수 있다.
+ */
+export const SITES = [
+  { key: "nunu", table: "events", name: "누누랩", host: "nunu-lab.vercel.app" },
+  { key: "hcis", table: "ax_events", name: "howcanisayit", host: "howcanisayit.vercel.app" },
+] as const;
+
 /** 한 구간의 이벤트를 전부. 화면에 쓰는 게 아니라 집계용이라 정렬만 맞춘다. */
-export async function eventsBetween(fromIso: string, toIso: string): Promise<Ev[]> {
+export async function eventsBetween(
+  fromIso: string,
+  toIso: string,
+  table = "events",
+): Promise<Ev[]> {
   if (!hasDb) return [];
   return (await rest(
-    `events?select=*&created_at=gte.${fromIso}&created_at=lt.${toIso}&order=created_at&limit=20000`,
+    `${table}?select=*&created_at=gte.${fromIso}&created_at=lt.${toIso}&order=created_at&limit=20000`,
   )) as Ev[];
 }
 
 /** 그 시각 이전에 이미 나온 방문자 해시들 (재방문 판정용). */
-export async function visitorsBefore(beforeIso: string): Promise<Set<string>> {
+export async function visitorsBefore(
+  beforeIso: string,
+  table = "events",
+): Promise<Set<string>> {
   if (!hasDb) return new Set();
   const rows = (await rest(
-    `events?select=ip_hash&ip_hash=neq.&created_at=lt.${beforeIso}&limit=20000`,
+    `${table}?select=ip_hash&ip_hash=neq.&created_at=lt.${beforeIso}&limit=20000`,
   )) as { ip_hash: string }[];
   return new Set(rows.map((r) => r.ip_hash));
 }

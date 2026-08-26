@@ -1,13 +1,11 @@
 import { hasAdminCookie } from "@/lib/admin";
-import { eventsBetween, visitorsBefore } from "@/lib/db";
+import { dailyCombined } from "@/lib/daily";
 import {
-  buildReport,
-  kstRange,
+  combinedHtml,
+  combinedSubject,
   mmss,
-  reportHtml,
-  reportSubject,
   yesterdayKst,
-  type DayReport,
+  type Combined,
 } from "@/lib/report";
 
 const SITE = "nunu-lab.vercel.app";
@@ -35,13 +33,7 @@ export async function GET(req: Request) {
   const day = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get("day") ?? "")
     ? url.searchParams.get("day")!
     : yesterdayKst();
-  const { from, to } = kstRange(day);
-
-  const [rows, before] = await Promise.all([
-    eventsBetween(from, to),
-    visitorsBefore(from),
-  ]);
-  const report = buildReport(day, rows, before);
+  const report = await dailyCombined(day);
 
   if (url.searchParams.get("dry")) return Response.json(report);
 
@@ -56,7 +48,7 @@ export async function GET(req: Request) {
 }
 
 /** Teams 채널 웹훅(Power Automate 워크플로). 없으면 조용히 건너뛴다. */
-async function sendTeams(report: DayReport, origin: string) {
+async function sendTeams(report: Combined, origin: string) {
   const hook = process.env.TEAMS_WEBHOOK_URL;
   if (!hook) return { sent: false, why: "TEAMS_WEBHOOK_URL 없음" };
   try {
@@ -76,7 +68,7 @@ async function sendTeams(report: DayReport, origin: string) {
  * 이메일(Resend). 도메인을 안 붙였으면 보내는 주소는 onboarding@resend.dev 로 두고
  * 받는 주소는 Resend 계정에 등록된 그 주소여야 한다. 도메인을 붙이면 REPORT_EMAIL_FROM 을 바꾸면 된다.
  */
-async function sendEmail(report: DayReport, origin: string) {
+async function sendEmail(report: Combined, origin: string) {
   const key = process.env.RESEND_API_KEY;
   const to = process.env.REPORT_EMAIL_TO;
   if (!key || !to) return { sent: false, why: "RESEND_API_KEY / REPORT_EMAIL_TO 없음" };
@@ -87,8 +79,8 @@ async function sendEmail(report: DayReport, origin: string) {
       body: JSON.stringify({
         from: process.env.REPORT_EMAIL_FROM || "리포트 <onboarding@resend.dev>",
         to: to.split(",").map((x) => x.trim()).filter(Boolean),
-        subject: reportSubject(report, SITE),
-        html: reportHtml(report, SITE, origin),
+        subject: combinedSubject(report),
+        html: combinedHtml(report, origin),
       }),
     });
     const text = await res.text();
@@ -101,41 +93,39 @@ async function sendEmail(report: DayReport, origin: string) {
 const list = (rows: [string, number][], n = 5) =>
   rows.slice(0, n).map(([k, v]) => `${k} ${v}`).join(" · ") || "없음";
 
-/** Teams 워크플로(Power Automate)가 받는 어댑티브 카드 모양. */
-function teamsCard(r: DayReport, origin: string) {
+/** Teams 워크플로(Power Automate)가 받는 어댑티브 카드 모양. 두 사이트 합본. */
+function teamsCard(c: Combined, origin: string) {
+  const list = (rows: [string, number][], n = 5) =>
+    rows.slice(0, n).map(([k, v]) => `${k} ${v}`).join(" · ") || "없음";
+
   const facts = [
-    { title: "사람", value: `${r.people}명 (새 ${r.newPeople} · 다시 온 ${r.returningPeople})` },
-    { title: "방문", value: `${r.sessions}번 · 페이지 ${r.views}장` },
-    { title: "머문 시간", value: `중앙값 ${mmss(r.medianSeconds)}` },
-    { title: "한 장만 보고 나감", value: `${r.bounceRate}%` },
-    { title: "밖으로 나간 클릭", value: `${r.clicks}건 — ${list(r.clickTargets, 3)}` },
-    { title: "유입", value: list(r.sources) },
-    { title: "지역", value: list(r.places, 4) },
-    { title: "기기", value: list(r.devices) },
-    { title: "많이 본 페이지", value: list(r.pages, 5) },
+    { title: "사람", value: `${c.people}명 (${c.sites.map((s) => `${s.name} ${s.report.people}`).join(" · ")})` },
+    { title: "방문", value: `${c.sessions}번 · 페이지 ${c.views}장` },
+    { title: "머문 시간", value: `중앙값 ${mmss(c.medianSeconds)}` },
+    { title: "밖으로 나간 클릭", value: `${c.clicks}건` },
+    { title: "유입", value: list(c.sources) },
+    { title: "지역", value: list(c.places, 4) },
+    { title: "기기", value: list(c.devices) },
   ];
 
-  const deep = r.journeys
-    .filter((j) => j.steps.length > 1 || j.clicks.length)
-    .slice(0, 3)
-    .map((j) => {
-      const path = [...j.steps, ...j.clicks.map((c) => `→${c}`)].join(" › ");
-      return `**${j.visitor}** ${j.start} · ${mmss(j.seconds)} · ${j.device}${j.place ? " · " + j.place : ""}${j.returning ? " · 재방문" : ""}\n\n${path}`;
-    });
-
   const body: unknown[] = [
-    { type: "TextBlock", size: "Large", weight: "Bolder", text: `📊 ${r.day} 방문 리포트` },
-    { type: "TextBlock", isSubtle: true, wrap: true, text: "howcanisayit.vercel.app" },
+    { type: "TextBlock", size: "Large", weight: "Bolder", text: `📊 ${c.day} 방문 리포트` },
+    { type: "TextBlock", isSubtle: true, wrap: true, text: c.sites.map((s) => s.host).join(" + ") },
     { type: "FactSet", facts },
   ];
 
-  if (deep.length) {
-    body.push({ type: "TextBlock", weight: "Bolder", text: "눈여겨볼 여정", separator: true });
+  for (const s of c.sites) {
+    const deep = s.report.journeys
+      .filter((j) => j.steps.length > 1 || j.clicks.length)
+      .slice(0, 2)
+      .map((j) => `**${j.visitor}** ${j.start} · ${mmss(j.seconds)} · ${j.device}${j.place ? " · " + j.place : ""}\n\n${[...j.steps, ...j.clicks.map((x) => `→${x}`)].join(" › ")}`);
+    body.push({ type: "TextBlock", weight: "Bolder", separator: true, text: `${s.name} — 사람 ${s.report.people} · 방문 ${s.report.sessions} · 클릭 ${s.report.clicks}` });
     for (const d of deep) body.push({ type: "TextBlock", wrap: true, text: d });
   }
-  if (r.gaps.length) {
-    body.push({ type: "TextBlock", weight: "Bolder", text: "확인이 필요한 것", separator: true });
-    body.push({ type: "TextBlock", wrap: true, text: r.gaps.map((g) => `• ${g}`).join("\n\n") });
+
+  if (c.findings.length) {
+    body.push({ type: "TextBlock", weight: "Bolder", text: "자동 점검", separator: true });
+    body.push({ type: "TextBlock", wrap: true, text: c.findings.map((f) => `• ${f}`).join("\n\n") });
   }
 
   return {
@@ -148,9 +138,7 @@ function teamsCard(r: DayReport, origin: string) {
           type: "AdaptiveCard",
           version: "1.4",
           body,
-          actions: [
-            { type: "Action.OpenUrl", title: "대시보드 열기", url: `${origin}/insight` },
-          ],
+          actions: [{ type: "Action.OpenUrl", title: "대시보드 열기", url: `${origin}/insight?day=${c.day}` }],
         },
       },
     ],

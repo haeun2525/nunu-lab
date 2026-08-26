@@ -178,7 +178,7 @@ export function buildReport(day: string, rows: Ev[], before: Set<string>): DayRe
 export const mmss = (s: number) =>
   s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;
 
-const esc = (t: string) =>
+export const esc = (t: string) =>
   t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const rows = (list: [string, number][], n = 6) =>
@@ -258,3 +258,129 @@ export function reportHtml(r: DayReport, site: string, origin: string) {
 
 export const reportSubject = (r: DayReport, site: string) =>
   `[${site}] ${r.day} · 사람 ${r.people} · 방문 ${r.sessions} · 클릭 ${r.clicks}`;
+
+// ── 두 사이트를 한 장으로 ──────────────────────────────────────
+
+export type SiteReport = { key: string; name: string; host: string; report: DayReport };
+
+export type Combined = {
+  day: string;
+  sites: SiteReport[];
+  people: number;      // 두 사이트를 오간 사람은 한 번만 센다
+  bothSites: number;   // 두 사이트를 다 본 사람
+  sessions: number;
+  views: number;
+  clicks: number;
+  medianSeconds: number;
+  places: [string, number][];
+  devices: [string, number][];
+  sources: [string, number][];
+  findings: string[];
+};
+
+/**
+ * 사람 수는 두 사이트를 합쳐서 셀 때 주의가 필요하다.
+ * **소금값이 사이트마다 달라서 같은 사람이라도 해시가 다르다** — 일부러 그렇게 해 뒀다.
+ * 그래서 합계는 "겹칠 수 있는 값" 이고, 여기서는 사이트별 합으로 두되 그 사실을 화면에 밝힌다.
+ */
+export function combine(day: string, sites: SiteReport[]): Combined {
+  const all = sites.flatMap((s) => s.report);
+  const merge = (pick: (r: DayReport) => [string, number][]): [string, number][] => {
+    const m = new Map<string, number>();
+    for (const r of all) for (const [k, v] of pick(r)) m.set(k, (m.get(k) ?? 0) + v);
+    return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+  };
+  const secs = sites
+    .flatMap((s) => s.report.journeys.map((j) => j.seconds))
+    .sort((a, b) => a - b);
+
+  return {
+    day,
+    sites,
+    people: all.reduce((a, r) => a + r.people, 0),
+    bothSites: 0, // 소금값이 달라 사이트 간 대조는 불가능하다
+    sessions: all.reduce((a, r) => a + r.sessions, 0),
+    views: all.reduce((a, r) => a + r.views, 0),
+    clicks: all.reduce((a, r) => a + r.clicks, 0),
+    medianSeconds: secs.length ? secs[Math.floor(secs.length / 2)] : 0,
+    places: merge((r) => r.places),
+    devices: merge((r) => r.devices),
+    sources: merge((r) => r.sources),
+    findings: diagnose(sites),
+  };
+}
+
+/**
+ * 눈에 보이는 것만 가지고 하는 자동 점검. **AI 도, API 키도 안 쓴다.**
+ * 여기 뜨는 건 전부 "숫자 모양이 이상하다" 는 사실 진술이고, 해석은 사람이 한다.
+ */
+function diagnose(sites: SiteReport[]): string[] {
+  const out: string[] = [];
+  for (const { name, report: r } of sites) {
+    // 어제 실제로 겪은 사고 — view 는 쌓이는데 visit 이 0 이면 집계 코드가 중간에 죽은 것이다
+    if (r.views > 0 && r.sessions > 0 && r.people === 0)
+      out.push(`[${name}] 페이지 열람은 ${r.views}건인데 사람이 0명 — 방문자 해시가 안 붙고 있다 (ANALYTICS_SALT 확인)`);
+    if (r.views > 0 && !r.journeys.some((j) => j.seconds > 0))
+      out.push(`[${name}] 체류시간이 전부 0 — 떠날 때 신호(sendBeacon)가 안 오고 있다`);
+    if (r.sessions > 4 && r.bounceRate >= 80)
+      out.push(`[${name}] 한 장만 보고 나간 비율 ${r.bounceRate}% — 첫 화면에서 다음으로 갈 길이 잘 안 보인다는 뜻일 수 있다`);
+    if (r.people > 0 && r.clicks === 0)
+      out.push(`[${name}] ${r.people}명이 왔는데 밖으로 나간 클릭이 0건 — 링크가 눈에 안 띄거나 눌리지 않는지 확인`);
+    const contents = r.contents.filter(([k]) => k && k !== "bio");
+    if (r.people > 3 && contents.length === 0)
+      out.push(`[${name}] 어느 콘텐츠가 데려왔는지 못 가른다 — 릴스마다 바이오를 /ig/<태그> 로 바꿔 걸어야 갈린다`);
+    const short = r.journeys.filter((j) => j.seconds <= 1 && j.steps.length <= 1).length;
+    if (r.sessions > 5 && short > r.sessions * 0.5)
+      out.push(`[${name}] 1초 이내에 끝난 방문이 ${short}건 — 봇이거나 미리 불러오기일 수 있다`);
+    for (const g of r.gaps) out.push(`[${name}] ${g}`);
+  }
+  if (!out.length) out.push("숫자 모양에 이상한 곳은 없다.");
+  return out;
+}
+
+/** 합본 메일/RSS 본문. 두 사이트를 위아래로 잇는다. */
+export function combinedHtml(c: Combined, origin: string) {
+  const head = `
+  <div style="font:700 19px -apple-system,sans-serif;color:#111">📊 ${c.day} 방문 리포트</div>
+  <div style="font:12px -apple-system,sans-serif;color:#888;padding-top:4px">
+    ${c.sites.map((s) => esc(s.name)).join(" + ")} 합본
+  </div>
+  <table role="presentation" cellspacing="6" style="border-collapse:separate;margin-top:14px"><tr>
+    ${[
+      ["사람", `${c.people}명`, "두 사이트 합"],
+      ["방문", `${c.sessions}번`, `페이지 ${c.views}장`],
+      ["머문 시간", mmss(c.medianSeconds), "중앙값"],
+      ["나간 클릭", `${c.clicks}건`, ""],
+    ]
+      .map(
+        ([l, v, s]) => `<td style="padding:10px 14px;border:1px solid #e6e6e6;border-radius:8px">
+          <div style="font:11px -apple-system,sans-serif;color:#888">${l}</div>
+          <div style="font:700 22px -apple-system,sans-serif;color:#111">${v}</div>
+          <div style="font:11px -apple-system,sans-serif;color:#888">${s}</div></td>`,
+      )
+      .join("")}
+  </tr></table>
+
+  ${c.findings.length ? `<div style="margin-top:18px;padding:12px 14px;background:#fff8e6;border-left:3px solid #f0a500">
+    <div style="font:700 12px -apple-system,sans-serif;color:#8a5b00">자동 점검</div>
+    ${c.findings.map((f) => `<div style="font:12px -apple-system,sans-serif;color:#5c4300;padding-top:5px">• ${esc(f)}</div>`).join("")}
+  </div>` : ""}`;
+
+  const per = c.sites
+    .map(
+      (s) => `<div style="margin-top:26px;padding-top:18px;border-top:2px solid #111">
+      <div style="font:700 15px -apple-system,sans-serif;color:#111">${esc(s.name)}</div>
+      ${reportHtml(s.report, s.host, `https://${s.host}`)}
+    </div>`,
+    )
+    .join("");
+
+  return `<div style="max-width:680px;margin:0 auto;padding:22px 18px;background:#fff">
+    ${head}
+    <div style="margin-top:14px"><a href="${origin}/insight?day=${c.day}" style="font:600 13px -apple-system,sans-serif;color:#111">대시보드에서 전부 보기 →</a></div>
+    ${per}
+  </div>`;
+}
+
+export const combinedSubject = (c: Combined) =>
+  `[방문 리포트] ${c.day} · 사람 ${c.people} · 방문 ${c.sessions} · 클릭 ${c.clicks}`;
