@@ -1,0 +1,180 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>레이아웃 검사</title>
+<!--
+  기기 폭별 레이아웃 검사기. 개발용이고 사이트 화면과는 상관없다.
+  `npm run dev` 로 띄운 뒤 /check.html 을 열면 아래 크기를 전부 훑는다.
+
+  헤드리스 크롬은 레이아웃 뷰포트가 500px 밑으로 안 내려가서 폰 폭을 못 만든다 —
+  그래서 iframe 안에 띄워 재고, 같은 출처라야 안을 들여다볼 수 있으므로 public/ 에 둔다.
+
+  보는 것 네 가지
+   1. 가로 넘침       — 화면 밖으로 밀려 좌우 스크롤이 생기는가
+   2. 겹침            — 누를 것끼리(또는 툴팁과) 실제로 포개지는가
+   3. 눌리는가        — 요소 한가운데를 찍었을 때 그 요소가 잡히는가 (덮여 있으면 실패)
+   4. 손가락 크기     — 누를 것이 40px 밑으로 작지 않은가
+-->
+<style>
+  body { font: 13px/1.6 ui-monospace, Menlo, monospace; background:#111; color:#eee; margin:0; padding:16px 18px; }
+  h1 { font-size: 15px; margin: 0 0 10px; }
+  #sum { padding: 8px 12px; border-radius: 8px; display:inline-block; margin-bottom: 12px; }
+  .ok { background:#123d1e; color:#7ef0a2; }
+  .bad { background:#4a1420; color:#ff9db1; }
+  pre { white-space: pre-wrap; word-break: break-all; }
+  .f { color:#ff9db1; }
+  .p { color:#7ef0a2; }
+  iframe { position: fixed; left: -20000px; top: 0; border: 0; }
+</style>
+<h1>레이아웃 검사 — <span id="site"></span></h1>
+<div id="sum">재는 중…</div>
+<pre id="out"></pre>
+<pre id="json" hidden></pre>
+<script>
+const PATHS = ["/", "/guestbook"];
+const DEVICES = [
+  ["SE(1세대)", 320, 568], ["iPhone 14", 390, 844], ["Galaxy S24", 412, 915],
+  ["iPad 세로", 768, 1024], ["폰 가로", 932, 430],
+];
+
+// 누르는 것 + 겹치면 곤란한 글자
+const SEL = 'a, button, input, textarea, select, [role="button"], .tip, .cbox, .badge, .handle, .brand, .bio, .hint, .notice-text, h1, h2, h3';
+// 손가락으로 누르는 크기는 폰·태블릿 폭에서만 본다. 마우스는 그만큼 안 커도 된다.
+const MIN_TAP = 40, TAP_MAX_W = 820;
+
+/* 글자가 실제로 그려진 자리. 링크 상자가 한 줄 전체를 차지해도(예: 홈의 큰 글씨)
+   빈 오른쪽까지 "겹쳤다"고 세지 않게, 겹침·덮임은 글자 자리로 본다.
+   반대로 손가락 크기는 상자 그대로 봐야 한다 — 누르는 자리는 상자니까. */
+function textRect(el, win) {
+  try {
+    const rng = el.ownerDocument.createRange();
+    rng.selectNodeContents(el);
+    const rects = [...rng.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+    if (!rects.length) return el.getBoundingClientRect();
+    let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+    for (const q of rects) { l = Math.min(l, q.left); t = Math.min(t, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); }
+    const box = el.getBoundingClientRect();
+    // 글자보다 상자가 훨씬 크면(배경·테두리가 있는 버튼 등) 상자를 믿는다
+    if ((r - l) * (b - t) > 0.55 * box.width * box.height) return box;
+    return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
+  } catch { return el.getBoundingClientRect(); }
+}
+
+function label(el) {
+  const cls = (el.className && typeof el.className === "string") ? "." + el.className.trim().split(/\s+/).slice(0,2).join(".") : "";
+  const txt = (el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 22);
+  return el.tagName.toLowerCase() + cls + (txt ? `("${txt}")` : "");
+}
+
+function measure(win, W) {
+  const checkTap = W <= TAP_MAX_W;
+  const doc = win.document, out = [];
+  const all = [...doc.querySelectorAll(SEL)].filter((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) return false;
+    const cs = win.getComputedStyle(el);
+    if (cs.visibility === "hidden" || cs.display === "none") return false;
+    if (parseFloat(cs.opacity) < 0.05) return false;
+    // 화면 밖으로 치워 둔 것(스크린리더용 등)은 뺀다
+    if (r.bottom < -200 || r.top > doc.documentElement.scrollHeight + 200) return false;
+    return true;
+  });
+
+  // 1. 가로 넘침
+  const de = doc.documentElement;
+  if (de.scrollWidth > W + 1) {
+    let worst = null;
+    for (const el of doc.querySelectorAll("body *")) {
+      const r = el.getBoundingClientRect();
+      if (r.width < 1) continue;
+      if (r.right > W + 1 && (!worst || r.right > worst.r.right)) worst = { el, r };
+    }
+    out.push({ type: "가로넘침", detail: `문서 폭 ${de.scrollWidth} > 화면 ${W}` + (worst ? ` · 가장 튀어나온 것 ${label(worst.el)} right=${Math.round(worst.r.right)}` : "") });
+  }
+
+  // 잎사귀만 남긴다 (안에 또 검사 대상이 있으면 그건 컨테이너다)
+  const leaves = all.filter((el) => !all.some((o) => o !== el && el.contains(o)));
+  // 글자 자리는 요소당 한 번만 잰다. 쌍마다 다시 재면 레이아웃을 수천 번 강제해 검사가 멎는다.
+  const TR = new Map();
+  const tr = (el) => { if (!TR.has(el)) TR.set(el, textRect(el, win)); return TR.get(el); };
+
+  // 2. 겹침
+  for (let i = 0; i < leaves.length; i++) {
+    for (let j = i + 1; j < leaves.length; j++) {
+      const a = leaves[i], b = leaves[j];
+      if (a.contains(b) || b.contains(a)) continue;
+      const ra = tr(a), rb = tr(b);
+      const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+      const h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+      if (w <= 1 || h <= 1) continue;
+      const area = w * h, small = Math.min(ra.width * ra.height, rb.width * rb.height);
+      if (area < 16 || area / small < 0.1) continue;
+      out.push({ type: "겹침", detail: `${label(a)} ↔ ${label(b)} · ${Math.round(w)}×${Math.round(h)}px (작은 쪽의 ${Math.round((area/small)*100)}%)` });
+    }
+  }
+
+  // 3. 한가운데를 찍으면 그 요소가 잡히는가 · 4. 손가락 크기
+  const tappable = all.filter((el) => {
+    if (!el.matches('a, button, input, textarea, select, [role="button"]')) return false;
+    const cs = win.getComputedStyle(el);
+    return cs.display !== "inline" && cs.pointerEvents !== "none";
+  });
+  for (const el of tappable) {
+    const r = el.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > win.innerHeight) continue;  // 스크롤해야 보이는 건 건너뛴다
+    if (r.width < 2 || r.height < 2) continue;
+    const p = tr(el);
+    const x = Math.min(Math.max(p.left + p.width / 2, 1), W - 1);
+    const y = p.top + p.height / 2;
+    const hit = doc.elementFromPoint(x, y);
+    if (hit && hit !== el && !el.contains(hit) && !hit.contains(el)) {
+      out.push({ type: "안눌림", detail: `${label(el)} 한가운데를 ${label(hit)} 이(가) 덮고 있다` });
+    }
+    // 체크박스·라디오는 감싼 <label> 이 누르는 자리다. 그 자리가 충분하면 통과.
+    const lab = el.matches('input[type="checkbox"], input[type="radio"]') ? el.closest("label") : null;
+    const hit = lab ? lab.getBoundingClientRect() : r;
+    if (checkTap && (hit.width < MIN_TAP || hit.height < MIN_TAP)) {
+      out.push({ type: "손가락", detail: `${label(el)} ${Math.round(r.width)}×${Math.round(r.height)}px (${MIN_TAP} 미만)` });
+    }
+    if (r.right > W + 1 || r.left < -1) {
+      out.push({ type: "화면밖", detail: `${label(el)} left=${Math.round(r.left)} right=${Math.round(r.right)} (화면 ${W})` });
+    }
+  }
+  return out;
+}
+
+async function run() {
+  document.getElementById("site").textContent = location.host;
+  const out = document.getElementById("out");
+  const results = [];
+  let fails = 0, runs = 0;
+  for (const path of PATHS) {
+    for (const [name, W, H] of DEVICES) {
+      const f = document.createElement("iframe");
+      f.width = W; f.height = H; f.src = path;
+      document.body.appendChild(f);
+      await new Promise((res) => { f.onload = res; setTimeout(res, 6000); });
+      await new Promise((res) => setTimeout(res, 260));
+      try { await f.contentDocument.fonts.ready; } catch {}
+      await new Promise((res) => setTimeout(res, 120));
+      let probs = [];
+      try { probs = measure(f.contentWindow, W); }
+      catch (e) { probs = [{ type: "검사오류", detail: String(e) }]; }
+      f.remove();
+      runs++;
+      const line = `${probs.length ? "✗" : "✓"} ${path.padEnd(20)} ${String(W).padStart(4)}×${H} ${name}`;
+      out.insertAdjacentHTML("beforeend", `<span class="${probs.length ? "f" : "p"}">${line}</span>\n`);
+      for (const p of probs) {
+        fails++;
+        results.push({ path, device: name, W, H, ...p });
+        out.insertAdjacentHTML("beforeend", `    <span class="f">${p.type} — ${p.detail.replace(/</g,"&lt;")}</span>\n`);
+      }
+    }
+  }
+  const sum = document.getElementById("sum");
+  sum.className = fails ? "bad" : "ok";
+  sum.textContent = fails ? `문제 ${fails}건 / 화면 ${runs}개` : `문제 없음 — 화면 ${runs}개 전부 통과`;
+  document.title = fails ? `FAIL ${fails}` : "PASS";
+  document.getElementById("json").textContent = "RESULT_JSON " + JSON.stringify({ fails, runs, results });
+}
+run();
+</script>

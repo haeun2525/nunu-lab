@@ -1,0 +1,21 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>모바일 미리보기</title>
+<style>
+  body { margin:0; background:#1a1a1a; display:flex; gap:18px; padding:18px; font:12px ui-monospace,monospace; color:#bbb; }
+  figure { margin:0; }
+  figcaption { padding:6px 2px; }
+  iframe { border:0; background:#000; display:block; box-shadow:0 0 0 1px #333; }
+</style>
+<div id="wrap"></div>
+<script>
+const SHOTS = [["/",320,568,"SE(1세대)"],["/",390,844,"iPhone 14"],["/",412,915,"Galaxy S24"],["/repo",390,844,"저장소"],["/guestbook",390,844,"방명록"]];
+const wrap = document.getElementById("wrap");
+for (const [path, w, h, cap] of SHOTS) {
+  const fig = document.createElement("figure");
+  fig.innerHTML = `<figcaption>${cap} · ${w}×${h}</figcaption>`;
+  const f = document.createElement("iframe");
+  f.width = w; f.height = h; f.src = path;
+  fig.appendChild(f); wrap.appendChild(fig);
+}
+</script>
