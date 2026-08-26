@@ -54,7 +54,7 @@ export const T = {
     noticeHint: "문구를 비우고 저장하면 배너가 사라집니다.",
     gateTitle: "혹시 팔로우하셨나요?",
     gateBody:
-      "코드는 그냥 가져가셔도 됩니다. 다만 다음 편이 궁금하시면 인스타에서 만나요 👾",
+      "여러분의 팔로우는 저의 콘텐츠 제작에 아주아주 큰 힘이 됩니댜...💗",
     gateFollow: "팔로우하러 가기",
     gateGo: "깃허브로 가기",
     shots: "사진",
@@ -127,7 +127,7 @@ export const T = {
     noticeHint: "Save an empty text to hide the banner.",
     gateTitle: "Already following?",
     gateBody:
-      "Take the code, it's free. If you want to see what comes next, find me on Instagram 👾",
+      "Your follow means so, so much for the stuff I make...💗",
     gateFollow: "Follow me",
     gateGo: "Go to GitHub",
     shots: "Photos",
