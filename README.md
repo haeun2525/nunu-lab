@@ -198,6 +198,11 @@ howcanisayit 과는 **일부러 다른 소금값**을 쓴다 — 같으면 두 �
 
 **내 접속은 안 센다.** 운영자 쿠키가 있거나 referer 가 `vercel.com` 이면 `isOwnVisit` 이 걸러낸다.
 
+**RLS 는 `supabase/007_rls.sql` 로 켠다** (howcanisayit 쪽 표는 그 저장소의 `004_rls.sql`).
+켜도 사이트는 안 깨진다 — 붙는 앱 셋이 전부 서버에서 service_role 로만 붙고 그건 RLS 를 통과한다.
+브라우저에서 Supabase 를 직접 부르는 코드는 한 줄도 없다. **나중에 브라우저에서 직접 읽는
+화면을 만들면 그때 표마다 정책을 써 줘야 한다.**
+
 새 칸은 `supabase/006_visitor.sql` 을 SQL Editor 에 붙여넣어야 생긴다.
 안 돌려도 집계가 멎지는 않는다 — 새 모양 → 그 전 모양 → 맨 처음 모양 순으로 물러나 저장한다.
 
