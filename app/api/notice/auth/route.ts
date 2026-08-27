@@ -1,4 +1,4 @@
-import { checkPassword, setAdminCookie } from "@/lib/admin";
+import { lockedMessage, setAdminCookie, tryPin } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,11 @@ export async function POST(req: Request) {
   }
 
   const pw = typeof payload.password === "string" ? payload.password : "";
-  if (!checkPassword(pw, real)) {
+  const r = await tryPin(pw);
+  if (!r.ok) {
+    if (r.locked) {
+      return Response.json({ error: lockedMessage(r.locked) }, { status: 429 });
+    }
     return Response.json({ error: "PIN 이 다릅니다." }, { status: 401 });
   }
 

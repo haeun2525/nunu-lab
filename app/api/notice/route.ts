@@ -1,6 +1,12 @@
 import { getNotice, setNotice, type LinkKind } from "@/lib/db";
 import { publicProjects } from "@/lib/projects";
-import { authorize, hasAdminCookie, setAdminCookie } from "@/lib/admin";
+import {
+  authorize,
+  hasAdminCookie,
+  lockedFor,
+  lockedMessage,
+  setAdminCookie,
+} from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +37,12 @@ export async function PUT(req: Request) {
     return Response.json(
       { error: "ADMIN_PASSWORD 가 설정돼 있지 않습니다." },
       { status: 503 },
+    );
+  }
+  if (auth === "locked") {
+    return Response.json(
+      { error: lockedMessage(await lockedFor()) },
+      { status: 429 },
     );
   }
   if (auth === "bad") {
