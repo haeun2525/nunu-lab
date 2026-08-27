@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLang } from "./LangProvider";
-import { SOCIAL } from "@/lib/projects";
 
 export default function Nav() {
   const { lang, t, setLang } = useLang();
@@ -28,7 +27,7 @@ export default function Nav() {
       <div className="nav-r">
         <a
           className="pill"
-          href={SOCIAL.instagram}
+          href="/go/instagram?from=nav"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -36,7 +35,7 @@ export default function Nav() {
         </a>
         <a
           className="pill"
-          href={SOCIAL.tiktok}
+          href="/go/tiktok?from=nav"
           target="_blank"
           rel="noopener noreferrer"
         >

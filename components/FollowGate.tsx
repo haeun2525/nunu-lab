@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLang } from "./LangProvider";
-import { SOCIAL } from "@/lib/projects";
 
 /**
  * 깃허브로 넘어가기 직전에 한 번 잡아 세워 팔로우를 권하는 팝업.
@@ -90,7 +89,7 @@ export default function FollowGate({
             <p>{t.gateBody}</p>
 
             <div className="gate-btns">
-              <button className="gate-b gate-follow" onClick={() => leave(SOCIAL.instagram)}>
+              <button className="gate-b gate-follow" onClick={() => leave("/go/instagram?from=gate")}>
                 {t.gateFollow}
               </button>
               <button className="gate-b gate-go" onClick={() => leave(goHref)}>

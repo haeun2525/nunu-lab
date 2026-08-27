@@ -115,9 +115,10 @@ export default function Detail({
               </FollowGate>
             )}
             {p.videoUrl && (
+              // 인스타로 나가는 것도 /go 를 거쳐야 몇 명이 영상을 보러 갔는지 잡힌다
               <a
                 className="btn btn-ig"
-                href={p.videoUrl}
+                href={`/go/${p.slug}?to=video&from=detail`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
