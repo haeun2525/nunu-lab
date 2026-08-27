@@ -422,8 +422,25 @@ export async function clearProjectEdit(slug: string) {
  *  2. Vercel 프리뷰 배포 — 배포마다 도메인이 새로 생기고 쿠키도 도메인별이라,
  *     배포 확인만 해도 매번 새 방문자로 잡힌다.
  */
+/** 사람이 아닌 것. 미리보기 크롤러가 링크를 대신 열어 보는 걸 클릭으로 세면 안 된다.
+ *
+ *  인스타·카카오는 **링크가 공유될 때마다** 미리보기를 만들려고 주소를 한 번 연다.
+ *  바이오에 건 링크는 특히 자주 긁히므로, 안 거르면 아무도 안 눌러도 숫자가 오른다.
+ *
+ *  **인스타·카카오 '앱 안 브라우저'는 거르면 안 된다** — 그건 진짜 사람이다.
+ *  UA 에 Instagram / KAKAOTALK 이 그대로 들어 있어서 이름만 보고 거르면 실제 유입이 통째로 날아간다.
+ *  긁는 쪽은 facebookexternalhit · kakaotalk-scrap 처럼 이름이 따로 있다. 그것만 집는다. */
+const BOT_UA =
+  /bot\b|crawler|spider|facebookexternalhit|facebot|kakaotalk-scrap|Yeti|bingpreview|Slackbot|Twitterbot|Discordbot|TelegramBot|WhatsApp|Applebot|HeadlessChrome|curl\/|wget\/|python-requests|node-fetch|axios\/|okhttp|Go-http-client/i;
+
+export function isBot(ua: string | null): boolean {
+  if (!ua) return true; // UA 를 아예 안 보내는 건 사람 브라우저가 아니다
+  return BOT_UA.test(ua);
+}
+
 export function shouldCount(req: Request): boolean {
   if (process.env.VERCEL_ENV === "preview") return false;
+  if (isBot(req.headers.get("user-agent"))) return false;
   return !isLocalRequest(req);
 }
 

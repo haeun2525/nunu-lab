@@ -18,6 +18,8 @@ export const dynamic = "force-dynamic";
  *  slug 가 'store' 면 스토어, 아니면 깃허브 레포.
  *  ?to=live 면 브라우저에서 바로 써 보는 주소로 간다 (그런 게 있는 프로젝트만). */
 function destination(slug: string, live: boolean): string | null {
+  // 카카오 오픈채팅. 주소는 환경변수에만 둔다 — 방을 새로 파도 배포 없이 바꾸려고.
+  if (slug === "openchat") return process.env.OPENCHAT_URL || null;
   if (slug === "store") return STORE_URL;
   const p = findProject(slug);
   if (!p) return null;
@@ -44,6 +46,32 @@ export async function GET(
   const from = q.get("from") ?? "site";
   // 집계에서 "무엇을 눌렀는지"까지 갈리게 이름을 붙여 둔다 (face-mirror:live 처럼)
   const target = live ? `${slug}:live` : slug;
+
+  // 카카오는 우리 UTM 을 읽지도, 알려주지도 않는다. 붙여 봐야 주소만 지저분해진다 —
+  // **세는 건 여기서 끝난다.** 아래 logEvent 가 이 클릭의 전부다.
+  if (slug === "openchat") {
+    try {
+      if (shouldCount(req) && !(await isOwnVisit(req))) {
+        await Promise.all([
+          bumpClick("openchat"),
+          logEvent({
+            kind: "click",
+            target: "openchat",
+            medium: from,
+            refHost: refHostOf(req.headers.get("referer")),
+            device: deviceOf(req.headers.get("user-agent")),
+            ipHash: visitorHash(req),
+            ...geoOf(req),
+            path: "/go/openchat",
+            session: await sessionId(),
+          }),
+        ]);
+      }
+    } catch (e) {
+      console.error("[go] 오픈채팅 클릭 집계 실패", e);
+    }
+    return NextResponse.redirect(base, 302);
+  }
 
   const url = new URL(base);
   url.searchParams.set("utm_source", "nunu-lab");
