@@ -482,6 +482,15 @@ textarea {
 .btn-gh:hover {
   background: #dfe3ff;
 }
+/* 브라우저에서 바로 써 보는 버튼. 코드를 보는 것보다 이게 먼저인 프로젝트에만 붙는다 */
+.btn-live {
+  background: linear-gradient(96deg, var(--c), #7dd3fc 60%, var(--v));
+  color: #04121a;
+  font-weight: 700;
+}
+.btn-live:hover {
+  filter: brightness(1.12);
+}
 .btn-n {
   font-family: var(--f-num);
   color: #6b7192;
@@ -1564,7 +1573,9 @@ a.nb:hover,
   .sorts button,
   .gb-send,
   .send,
-  .btn {
+  .btn,
+  /* 체크박스 자체는 14px 이라 손가락으로 못 누른다. 감싼 라벨이 누르는 자리다 */
+  .anon {
     min-height: 44px;
   }
   .cform input[type="text"],

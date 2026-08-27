@@ -29,6 +29,15 @@ function InstagramMark() {
   );
 }
 
+function TryMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="9.2" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M10 8.6 16 12l-6 3.4V8.6Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 function GithubMark() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
@@ -94,6 +103,17 @@ export default function Detail({
           <p className="lead">{p.tagline[lang]}</p>
 
           <div className="meta-row">
+            {/* 브라우저에서 바로 되는 게 있으면 그게 먼저다. 코드는 그다음 */}
+            {p.liveUrl && (
+              <FollowGate
+                className="btn btn-live"
+                goHref={`/go/${p.slug}?to=live&from=detail`}
+                goLabel={t.gateGoLive}
+              >
+                <TryMark />
+                {t.openLive}
+              </FollowGate>
+            )}
             {p.videoUrl && (
               <a
                 className="btn btn-ig"

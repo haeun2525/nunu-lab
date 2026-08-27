@@ -130,9 +130,11 @@ function measure(win, W) {
       out.push({ type: "안눌림", detail: `${label(el)} 한가운데를 ${label(hit)} 이(가) 덮고 있다` });
     }
     // 체크박스·라디오는 감싼 <label> 이 누르는 자리다. 그 자리가 충분하면 통과.
+    // 이름을 tapBox 로 둔다 — 바로 위 elementFromPoint 결과가 이미 hit 이라
+    // 같은 이름을 다시 쓰면 SyntaxError 로 스크립트 전체가 안 돌아간다.
     const lab = el.matches('input[type="checkbox"], input[type="radio"]') ? el.closest("label") : null;
-    const hit = lab ? lab.getBoundingClientRect() : r;
-    if (checkTap && (hit.width < MIN_TAP || hit.height < MIN_TAP)) {
+    const tapBox = lab ? lab.getBoundingClientRect() : r;
+    if (checkTap && (tapBox.width < MIN_TAP || tapBox.height < MIN_TAP)) {
       out.push({ type: "손가락", detail: `${label(el)} ${Math.round(r.width)}×${Math.round(r.height)}px (${MIN_TAP} 미만)` });
     }
     if (r.right > W + 1 || r.left < -1) {

@@ -30,7 +30,7 @@
 <pre id="out"></pre>
 <pre id="json" hidden></pre>
 <script>
-const PATHS = ["/", "/repo", "/repo/lyrics", "/guestbook"];
+const PATHS = ["/", "/repo", "/repo/lyrics", "/repo/face-mirror", "/guestbook"];
 const DEVICES = [
   ["SE(1세대)", 320, 568], ["작은 안드로이드", 360, 640], ["iPhone SE2/3", 375, 667],
   ["iPhone 14", 390, 844], ["Pixel 8", 393, 873], ["Galaxy S24", 412, 915],
@@ -133,9 +133,11 @@ function measure(win, W) {
       out.push({ type: "안눌림", detail: `${label(el)} 한가운데를 ${label(hit)} 이(가) 덮고 있다` });
     }
     // 체크박스·라디오는 감싼 <label> 이 누르는 자리다. 그 자리가 충분하면 통과.
+    // 이름을 tapBox 로 둔다 — 바로 위 elementFromPoint 결과가 이미 hit 이라
+    // 같은 이름을 다시 쓰면 SyntaxError 로 스크립트 전체가 안 돌아간다.
     const lab = el.matches('input[type="checkbox"], input[type="radio"]') ? el.closest("label") : null;
-    const hit = lab ? lab.getBoundingClientRect() : r;
-    if (checkTap && (hit.width < MIN_TAP || hit.height < MIN_TAP)) {
+    const tapBox = lab ? lab.getBoundingClientRect() : r;
+    if (checkTap && (tapBox.width < MIN_TAP || tapBox.height < MIN_TAP)) {
       out.push({ type: "손가락", detail: `${label(el)} ${Math.round(r.width)}×${Math.round(r.height)}px (${MIN_TAP} 미만)` });
     }
     if (r.right > W + 1 || r.left < -1) {
@@ -157,7 +159,14 @@ async function run() {
       document.body.appendChild(f);
       await new Promise((res) => { f.onload = res; setTimeout(res, 6000); });
       await new Promise((res) => setTimeout(res, 260));
-      try { await f.contentDocument.fonts.ready; } catch {}
+      // 글꼴은 CDN 에서 온다. 못 받으면 fonts.ready 가 영영 안 끝나서
+      // 검사가 첫 화면에서 그대로 멈춘다. 1.5초만 기다리고 그냥 간다.
+      try {
+        await Promise.race([
+          f.contentDocument.fonts.ready,
+          new Promise((res) => setTimeout(res, 1500)),
+        ]);
+      } catch {}
       await new Promise((res) => setTimeout(res, 120));
       let probs = [];
       try { probs = measure(f.contentWindow, W); }

@@ -36,6 +36,8 @@ export const T = {
     sortOldest: "오래된순",
     backToRepo: "← 저장소로",
     openGithub: "깃허브에서 열기",
+    /** 코드가 아니라 직접 써 보는 게 핵심인 것에만 붙는다 (liveUrl 이 있을 때) */
+    openLive: "바로 사용해보기",
     posted: "인스타 업로드",
     watchVideo: "원본 영상 보기",
     close: "닫기",
@@ -57,6 +59,8 @@ export const T = {
       "여러분의 팔로우는 저의 콘텐츠 제작에 아주아주 큰 힘이 됩니댜...💗",
     gateFollow: "팔로우하러 가기",
     gateGo: "깃허브로 가기",
+    /** 넘어갈 곳이 깃허브가 아닐 때 쓰는 문구 */
+    gateGoLive: "바로 이동하기",
     shots: "사진",
     reviews: "후기",
     reviewsLead: "만들어 보셨거나, 궁금한 게 있으면 남겨주세요.",
@@ -109,6 +113,7 @@ export const T = {
     sortOldest: "Oldest",
     backToRepo: "← Back",
     openGithub: "Open on GitHub",
+    openLive: "Try it now",
     posted: "Posted",
     watchVideo: "Watch the reel",
     close: "Close",
@@ -130,6 +135,7 @@ export const T = {
       "Your follow means so, so much for the stuff I make...💗",
     gateFollow: "Follow me",
     gateGo: "Go to GitHub",
+    gateGoLive: "Just take me there",
     shots: "Photos",
     reviews: "Reviews",
     reviewsLead: "Built it yourself, or got a question? Leave a note.",

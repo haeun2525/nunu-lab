@@ -26,6 +26,9 @@ export type Project = {
   images: string[];
   /** 인스타 게시물 퍼머링크. 없으면 '원본 영상 보기' 버튼이 안 뜬다. */
   videoUrl: string | null;
+  /** 브라우저에서 바로 써 볼 수 있는 주소. 있으면 상세에 '바로 사용해보기' 가 먼저 뜬다.
+   *  보드 없이도 노는 것에만 붙인다. 운영자 모드에서는 못 고친다 (파일에서만) */
+  liveUrl?: string | null;
   /** 저장소에 올린 날(YYYY-MM-DD). 7일 이내면 갤러리에 NEW 뱃지가 붙는다.
    *  null 이면 초기 등록분이라 뱃지 대상이 아니다. */
   addedAt: string | null;
@@ -224,6 +227,42 @@ export const PROJECTS: Project[] = [
     videoUrl: "https://www.instagram.com/p/Dccw2GrS_YJ/",
     addedAt: "2026-08-25",
     postedAt: "2026-08-25",
+    draft: false,
+  },
+  {
+    slug: "face-mirror",
+    no: 7,
+    repo: "haeun2525/nu40-face-mirror",
+    title: { ko: "NU40DK 얼굴 미러", en: "NU40DK Face Mirror" },
+    tagline: {
+      ko: "웹캠 앞에서 웃으면, 손바닥만 한 화면 속 냥이도 같이 웃습니다.",
+      en: "Smile at the webcam and the little cat on the tiny screen smiles back.",
+    },
+    body: [
+      {
+        ko: "카메라를 켜고 표정을 지으면 화면 속 픽셀 냥이가 그대로 따라 합니다. 눈을 감으면 같이 감고, 입을 벌리면 같이 벌리고, 고개를 기울이면 같이 기울여요. 아이폰 미모지와 같은 개념인데, 이 얼굴은 책상 위 0.96인치짜리 작은 화면에 뜹니다.",
+        en: "Turn on the camera and the pixel cat copies your face. Close an eye and it closes one too; open your mouth, tilt your head, it follows. Same idea as an iPhone Memoji — except this face lives on a 0.96-inch screen on your desk.",
+      },
+      {
+        ko: "보드가 없어도 됩니다. 웹페이지만 열면 표정 미션 9개(무표정·활짝 웃기·놀람·윙크·찡그림·뽀뽀·슬픔·메롱·잠자기)를 차례로 따라 하는 놀이가 그대로 돌아가요. 폰으로 열어도 됩니다.",
+        en: "You don't need the board. Open the page and the nine-expression game — neutral, big smile, surprise, wink, frown, kiss, sad, tongue out, sleep — runs as it is. It works on a phone too.",
+      },
+      {
+        ko: "컴퓨터는 완성된 그림을 보내지 않습니다. '입 벌림 72, 왼눈 감김 100, 고개 -12도' 같은 숫자만 보내고, 보드가 그 숫자로 얼굴을 조립해 그려요. 그래야 반응이 빠릅니다.",
+        en: "The computer never sends a finished picture. It sends numbers — mouth 72, left eye 100, head −12° — and the board assembles the face from them. That's what keeps it quick.",
+      },
+      {
+        ko: "웹캠 영상은 브라우저 밖으로 나가지 않습니다. 어디에도 업로드하지 않아요.",
+        en: "The webcam video never leaves your browser. Nothing is uploaded anywhere.",
+      },
+    ],
+    tags: ["MediaPipe", "Web Serial", "Arduino", "OLED"],
+    thumb: "/thumbs/face-mirror.jpg",
+    images: ["/thumbs/face-mirror.jpg"],
+    videoUrl: null,
+    liveUrl: "https://nu40-face-mirror.vercel.app",
+    addedAt: "2026-08-27",
+    postedAt: null,
     draft: false,
   },
 ];

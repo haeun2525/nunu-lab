@@ -16,10 +16,13 @@ export default function FollowGate({
   goHref,
   children,
   className,
+  goLabel,
 }: {
   goHref: string;
   children: React.ReactNode;
   className?: string;
+  /** 넘어가기 버튼 문구. 깃허브가 아닌 곳으로 갈 때 바꿔 끼운다 */
+  goLabel?: string;
 }) {
   const { t } = useLang();
   const [open, setOpen] = useState(false);
@@ -91,7 +94,7 @@ export default function FollowGate({
                 {t.gateFollow}
               </button>
               <button className="gate-b gate-go" onClick={() => leave(goHref)}>
-                {t.gateGo}
+                {goLabel ?? t.gateGo}
               </button>
             </div>
           </div>
