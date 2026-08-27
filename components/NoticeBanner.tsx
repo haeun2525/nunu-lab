@@ -207,7 +207,14 @@ export default function NoticeBanner({
               <>
                 <h3>{t.noticeLocked}</h3>
                 <p className="nb-sub">{t.noticeLockedSub}</p>
+                {/* key 를 다르게 준 이유 — 아래 공지 칸과 이 칸은 form 안에서 같은 자리라,
+                    key 가 없으면 React 가 **같은 DOM 요소를 재활용**하고 type 만
+                    password → text 로 바꾼다. 그러면 맥이 그 칸을 계속 비밀번호 칸으로
+                    보고 (secure input) **한글 IME 를 안 붙인다** — 한/영 키를 눌러도
+                    안 바뀌고 숫자·영문만 들어간다. key 를 주면 새 칸이 만들어진다.
+                    howcanisayit 은 두 단계가 form/div 로 갈려 있어 이 문제가 없다. */}
                 <input
+                  key="notice-pin"
                   type="password"
                   value={pw}
                   onChange={(e) => setPw(e.target.value)}
@@ -228,6 +235,7 @@ export default function NoticeBanner({
 
                 <label className="nb-l">{t.noticeText}</label>
                 <input
+                  key="notice-text"
                   type="text"
                   value={draft.text}
                   maxLength={200}
