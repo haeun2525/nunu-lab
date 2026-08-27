@@ -491,6 +491,38 @@ textarea {
 .btn-live:hover {
   filter: brightness(1.12);
 }
+/* 방명록. 이 줄에서 유일하게 안 채운 버튼이라 앞의 셋(체험·영상·깃허브)을 안 가린다.
+   대신 문구가 돌아서 눈에 띈다. 분홍은 이 줄에서 아무도 안 쓰는 색이다. */
+.btn-guest {
+  background: rgba(244, 114, 182, 0.09);
+  border-color: var(--p);
+  color: var(--p);
+  font-weight: 700;
+}
+.btn-guest:hover {
+  background: var(--p);
+  color: #1a0713;
+}
+/* 세 문구를 **같은 칸에 겹쳐** 둔다 — 그리드 한 칸의 폭은 제일 긴 줄에 맞춰지므로
+   문구가 바뀌어도 버튼 폭이 안 변한다. 따로 놓고 바꾸면 좁은 화면에서 줄이 다시 접혀
+   손이 가는 중에 버튼이 움직인다. */
+.rotbox { display: inline-grid; justify-items: center; }
+.rot {
+  grid-area: 1 / 1; white-space: nowrap;
+  opacity: 0; animation: guestSwap 6s infinite;
+}
+@keyframes guestSwap {
+  0%      { opacity: 0; transform: translateY(5px); }
+  5%, 28% { opacity: 1; transform: translateY(0); }
+  33%     { opacity: 0; transform: translateY(-5px); }
+  100%    { opacity: 0; transform: translateY(-5px); }
+}
+/* 움직임을 끈 기기에서는 첫 문구만 세워 둔다 */
+@media (prefers-reduced-motion: reduce) {
+  .rot { animation: none; opacity: 0; }
+  .rot:first-child { opacity: 1; }
+}
+
 .btn-n {
   font-family: var(--f-num);
   color: #6b7192;

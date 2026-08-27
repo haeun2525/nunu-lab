@@ -38,6 +38,9 @@ export const T = {
     openGithub: "깃허브에서 열기",
     /** 코드가 아니라 직접 써 보는 게 핵심인 것에만 붙는다 (liveUrl 이 있을 때) */
     openLive: "바로 사용해보기",
+    /** 방명록 버튼. 첫 줄이 기본이자 화면 낭독기가 읽는 이름이고, 2초마다 돌아간다 */
+    openGuest: "응원의 한마디 남기기",
+    guestRotate: ["응원의 한마디 남기기", "만들어 보셨어요?", "한마디 남기고 가기"],
     posted: "인스타 업로드",
     watchVideo: "원본 영상 보기",
     close: "닫기",
@@ -114,6 +117,8 @@ export const T = {
     backToRepo: "← Back",
     openGithub: "Open on GitHub",
     openLive: "Try it now",
+    openGuest: "Leave a word of support",
+    guestRotate: ["Leave a word of support", "Did you build it?", "Say something before you go"],
     posted: "Posted",
     watchVideo: "Watch the reel",
     close: "Close",
@@ -158,5 +163,10 @@ export const T = {
   },
 } as const;
 
-/** `as const` 때문에 값이 리터럴 타입이 된다. ko/en 이 서로 대입 가능하도록 string 으로 넓힌다. */
-export type Dict = { [K in keyof (typeof T)["ko"]]: string };
+/** `as const` 때문에 값이 리터럴 타입이 된다. ko/en 이 서로 대입 가능하도록 넓힌다.
+ *  문구 묶음(방명록 회전 문구처럼)은 배열 그대로 두고, 나머지만 string 으로 편다. */
+export type Dict = {
+  [K in keyof (typeof T)["ko"]]: (typeof T)["ko"][K] extends readonly string[]
+    ? readonly string[]
+    : string;
+};

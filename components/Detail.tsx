@@ -38,6 +38,20 @@ function TryMark() {
   );
 }
 
+/** 방명록 — 말풍선. 다른 아이콘과 같은 24 격자로 그린다 */
+function NoteMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M3.6 4.6h16.8v11.2H9.4L5.2 19.4v-3.6H3.6z"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function GithubMark() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
@@ -136,6 +150,23 @@ export default function Detail({
               {t.openGithub}
               <span className="btn-n">↗ {clicks.toLocaleString()}</span>
             </FollowGate>
+
+            {/* 방명록. 우리 페이지라 /go 를 안 거치고, 어디서 넘어왔는지는
+                여정에 '/repo/… › /guestbook' 으로 그대로 남는다.
+                문구가 2초마다 바뀌지만 **버튼 폭은 안 변한다** —
+                세 문구를 같은 칸에 겹쳐 쌓아 제일 긴 것에 폭을 맞춰 놨다.
+                폭이 변하면 좁은 화면에서 줄이 다시 접혀, 누르려고 손이 가는 중에
+                버튼이 움직인다. 낭독기에는 첫 문구 하나만 이름으로 준다. */}
+            <Link className="btn btn-guest" href="/guestbook" aria-label={t.openGuest}>
+              <NoteMark />
+              <span className="rotbox" aria-hidden="true">
+                {t.guestRotate.map((line, i) => (
+                  <span className="rot" key={line} style={{ animationDelay: `${i * 2}s` }}>
+                    {line}
+                  </span>
+                ))}
+              </span>
+            </Link>
           </div>
 
           <div className="meta-row">
