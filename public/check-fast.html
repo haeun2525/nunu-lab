@@ -53,8 +53,15 @@ function textRect(el, win) {
     let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
     for (const q of rects) { l = Math.min(l, q.left); t = Math.min(t, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); }
     const box = el.getBoundingClientRect();
-    // 글자보다 상자가 훨씬 크면(배경·테두리가 있는 버튼 등) 상자를 믿는다
-    if ((r - l) * (b - t) > 0.55 * box.width * box.height) return box;
+    // 배경이나 테두리가 그려진 것(버튼·쪽지 등)은 상자 전체가 눈에 보이므로 상자를 믿는다.
+    // 배경이 없으면 보이는 건 글자뿐이라 상자를 쓰면 안 된다 — 홈의 .line 처럼
+    // 한 줄을 가로로 다 차지하는 링크가 오른쪽 빈 자리까지 "겹쳤다"고 잡힌다.
+    const cs = win.getComputedStyle(el);
+    const painted =
+      cs.backgroundImage !== "none" ||
+      !/^(transparent|rgba\(0,\s*0,\s*0,\s*0\))$/.test(cs.backgroundColor) ||
+      parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderLeftWidth) > 0;
+    if (painted) return box;
     return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
   } catch { return el.getBoundingClientRect(); }
 }
@@ -63,6 +70,11 @@ function label(el) {
   const cls = (el.className && typeof el.className === "string") ? "." + el.className.trim().split(/\s+/).slice(0,2).join(".") : "";
   const txt = (el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 22);
   return el.tagName.toLowerCase() + cls + (txt ? `("${txt}")` : "");
+}
+
+function floaty(el, win) {
+  const cs = win.getComputedStyle(el);
+  return cs.position !== "static" || cs.transform !== "none" || cs.float !== "none";
 }
 
 function measure(win, W) {
@@ -102,6 +114,9 @@ function measure(win, W) {
     for (let j = i + 1; j < leaves.length; j++) {
       const a = leaves[i], b = leaves[j];
       if (a.contains(b) || b.contains(a)) continue;
+      // 둘 다 흐름대로 놓인 것이면 넘어간다. 큰 글씨 네 줄처럼 줄상자가 서로 물려도
+      // 글자끼리 부딪히지는 않는다 — 남을 덮을 수 있는 건 띄우거나 돌려 놓은 것뿐이다.
+      if (!floaty(a, win) && !floaty(b, win)) continue;
       const ra = tr(a), rb = tr(b);
       const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
       const h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
