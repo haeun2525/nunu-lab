@@ -98,7 +98,11 @@ export async function tryPin(given: string): Promise<PinTry> {
   }
 
   await new Promise((r) => setTimeout(r, SLOW_MS));
-  const next = strikes.get(key) ?? { n: 0, last: now };
+  // "연달아" 열 번이다. 한참 전에 틀린 건 안 센다 — 안 그러면 몇 주에 걸쳐
+  // 하나씩 틀린 것이 쌓여서 어느 날 갑자기 잠긴다.
+  const prev = strikes.get(key);
+  const next =
+    prev && now - prev.last < FORGET_MS ? prev : { n: 0, last: now };
   next.n += 1;
   next.last = Date.now();
   strikes.set(key, next);
