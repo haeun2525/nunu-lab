@@ -1,3 +1,4 @@
+import { hasAdminCookie } from "@/lib/admin";
 import { kstDate } from "@/lib/db";
 import { dailyCombined } from "@/lib/daily";
 import { combinedHtml, combinedSubject, esc } from "@/lib/report";
@@ -16,9 +17,20 @@ const PUBLISH_HOUR = 9;
  * "RSS 항목이 게시되면 → 메일 보내기" 하나면 매일 아침 리포트가 온다.
  *
  * 항목이 뜨는 시각이 곧 리포트가 도착하는 시각이다 (아래 PUBLISH_HOUR).
+ *
+ * **열쇠를 건다.** 이 피드에는 두 사이트의 방문자 해시·지역·머문 시각·여정이
+ * 통째로 들어 있다 — /insight 와 같은 내용이다. 열어 두면 그쪽 PIN 이 무의미해진다.
+ * RSS 리더는 헤더를 못 붙이므로 쿼리(`?key=`)로 받는다.
  */
 export async function GET(req: Request) {
-  const origin = new URL(req.url).origin;
+  const url = new URL(req.url);
+  const secret = process.env.CRON_SECRET;
+  const keyed = Boolean(secret) && url.searchParams.get("key") === secret;
+  const admin = await hasAdminCookie().catch(() => false);
+  if (!keyed && !admin) {
+    return new Response("권한 없음", { status: 401 });
+  }
+  const origin = url.origin;
   const kstNow = new Date(Date.now() + 9 * 3600e3);
   const today = kstDate();
 
@@ -61,7 +73,7 @@ export async function GET(req: Request) {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=600",
+      "Cache-Control": "private, no-store",
     },
   });
 }
