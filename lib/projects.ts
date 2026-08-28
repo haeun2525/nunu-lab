@@ -299,10 +299,10 @@ export const PROJECTS: Project[] = [
     tags: ["토스 오픈API", "nRF52840", "OLED", "한글 글꼴"],
     thumb: "/thumbs/stock-ticker.jpg",
     images: ["/thumbs/stock-ticker.jpg"],
-    videoUrl: null,
+    videoUrl: "https://www.instagram.com/p/DckqQJuyjEB/",
     liveUrl: null,
     addedAt: "2026-08-28",
-    postedAt: null,
+    postedAt: "2026-08-28",
     draft: false,
   },
 ];
