@@ -265,6 +265,46 @@ export const PROJECTS: Project[] = [
     postedAt: null,
     draft: false,
   },
+  {
+    slug: "stock-ticker",
+    no: 8,
+    repo: "haeun2525/nu40-stock-ticker",
+    title: { ko: "NU40DK 주식 티커", en: "NU40DK Stock Ticker" },
+    tagline: {
+      ko: "손바닥만 한 화면에 지금 내 종목이 뜹니다. 떨어지면 LED가 켜져요.",
+      en: "Your stocks on a palm-sized screen — and an LED that lights up when one drops.",
+    },
+    body: [
+      {
+        ko: "토스증권 오픈 API에서 시세를 받아 0.96인치 화면에 종목명 · 현재가 · 등락률 · 오늘 차트를 그립니다. 5초마다 갱신돼요. 보드의 버튼 네 개가 종목 네 개에 하나씩 붙어 있어서, 누를 때마다 화면이 바뀝니다.",
+        en: "It pulls quotes from the Toss Securities open API and draws the name, price, change and today's chart on a 0.96-inch screen, refreshed every five seconds. The board's four buttons map to four stocks — press one and the screen switches.",
+      },
+      {
+        ko: "미리 정해 둔 값 아래로 떨어지면 그 자리의 LED가 켜집니다. 지금 보고 있는 종목이 아니어도 켜져요 — 다른 게 떨어진 것도 알아야 하니까요.",
+        en: "Set a floor price and the matching LED turns on when it's crossed — even for a stock you're not currently looking at, because that's the one you'd want to know about.",
+      },
+      {
+        ko: "한글 종목명이 그대로 나옵니다. 화면 기본 글꼴에는 한글이 없어서, 완성형 2350자를 픽셀 글꼴로 직접 만들어 넣었습니다. '삼성전자'가 코드 대신 이름으로 뜹니다.",
+        en: "Korean company names render as they are. The display's stock font has no Hangul, so all 2,350 precomposed syllables were built into a pixel font — you see the name, not the ticker code.",
+      },
+      {
+        ko: "NU40은 와이파이가 없습니다. 그래서 인터넷 호출과 계산은 전부 PC(파이썬)가 하고, 보드는 받은 숫자를 그리기만 합니다. 그래야 반응이 빨라요.",
+        en: "The NU40 has no WiFi, so a small Python program on the computer does the fetching and the maths, and the board only draws the numbers it is handed. That is what keeps it quick.",
+      },
+      {
+        ko: "장이 닫힌 시간에도 가짜 시세로 하드웨어를 검증할 수 있고, 보드 없이 화면만 미리 그려 보는 도구도 같이 들어 있습니다.",
+        en: "There is a mock feed for testing the hardware after hours, and a preview tool that renders the screen without a board at all.",
+      },
+    ],
+    tags: ["토스 오픈API", "nRF52840", "OLED", "한글 글꼴"],
+    thumb: "/thumbs/stock-ticker.jpg",
+    images: ["/thumbs/stock-ticker.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-08-28",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
