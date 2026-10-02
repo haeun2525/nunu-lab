@@ -305,6 +305,42 @@ export const PROJECTS: Project[] = [
     postedAt: "2026-08-28",
     draft: false,
   },
+  {
+    slug: "explode-viewer",
+    no: 9,
+    repo: "haeun2525/defense-explode-viewer",
+    title: { ko: "군 장비 분해 뷰어", en: "Military Gear Exploded Viewer" },
+    tagline: {
+      ko: "손을 펴면 장비가 분해되고, 그 속에 든 회로와 부품이 보입니다.",
+      en: "Open your hand and the gear comes apart — showing the circuits and parts inside.",
+    },
+    body: [
+      {
+        ko: "배회탄약 Switchblade 300, 정찰 쿼드콥터, 야간투시경 PVS-7, 무인 지상 감시 센서, K2C1 소총. 장비 다섯 가지를 화면에서 한 겹씩 벗겨 볼 수 있어요. 부품마다 이름표와 한 줄 설명이 붙어 있습니다.",
+        en: "A Switchblade 300 loitering munition, a recon quadcopter, PVS-7 night-vision goggles, an unattended ground sensor and a K2C1 rifle. Peel each one apart layer by layer — every part has a name tag and a one-line description.",
+      },
+      {
+        ko: "웹캠 앞에서 손을 움직이면 장비가 따라 돌고, 손을 펴면 분해, 주먹을 쥐면 다시 조립됩니다. 검지로 부품 하나를 가리키고 있으면 그 부품만 크게 보여 줘요. 카메라가 없으면 마우스로 됩니다 — 드래그로 돌리고, 휠로 분해합니다.",
+        en: "Move your hand in front of the webcam and the gear turns with it; open your hand to take it apart, make a fist to put it back together. Point at a part with your index finger and it zooms in on just that part. No camera? Use the mouse — drag to rotate, scroll to explode.",
+      },
+      {
+        ko: "'작동 보기'를 누르면 신호가 어느 부품에서 어느 부품으로 흐르는지 단계별로 보여 줍니다.",
+        en: "Press 'How it works' to see, step by step, how signals travel from one part to the next.",
+      },
+      {
+        ko: "안에 든 부품 배치와 모양은 공개 자료를 바탕으로 그린 개념도예요. 실제 설계와는 다를 수 있습니다. 웹캠 영상은 브라우저 밖으로 나가지 않습니다.",
+        en: "The parts and layout are a concept drawing based on public sources — the real design may differ. The webcam video never leaves your browser.",
+      },
+    ],
+    tags: ["three.js", "MediaPipe", "Blender", "Web"],
+    thumb: "/thumbs/explode-viewer.jpg",
+    images: ["/thumbs/explode-viewer.jpg"],
+    videoUrl: null,
+    liveUrl: "https://defense-explode-viewer.vercel.app",
+    addedAt: "2026-10-02",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
