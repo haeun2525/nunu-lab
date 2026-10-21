@@ -26,6 +26,18 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
+  // 인스타 프로필 링크용 짧은 주소. 바이오에 utm 이 그대로 보여 지저분해서
+  // /ig 만 걸고, 여기서 예전과 똑같은 utm 을 붙여 넘긴다 → 기존 집계와 이어진다.
+  // 영상 따라 utm_content 를 바꿀 땐 여기만 고치면 된다 (그래서 영구 리다이렉트가 아니다).
+  async redirects() {
+    return [
+      {
+        source: "/ig",
+        destination: "/?utm_source=instagram&utm_medium=bio&utm_content=link_in_bio",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
