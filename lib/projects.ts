@@ -341,6 +341,46 @@ export const PROJECTS: Project[] = [
     postedAt: null,
     draft: false,
   },
+  {
+    slug: "commute-board",
+    no: 10,
+    repo: "haeun2525/nu40-commute",
+    title: { ko: "NU40DK 퇴근 알림 보드", en: "NU40DK Commute Board" },
+    tagline: {
+      ko: "지하철 시간에 맞춰 \"지금 출발해야 해요!\" 하고 알려 주는 책상 위 작은 화면.",
+      en: "A tiny desk screen that tells you \"Leave now!\" in time to catch your train.",
+    },
+    body: [
+      {
+        ko: "서울시 지하철 API에서 회사 앞 역의 열차 시각을 받아, 지금 나가면 탈 수 있는 열차를 골라 줍니다. 화면에서는 픽셀 열차가 레일 위를 달려 역으로 다가오고, 출발선 깃발을 지나기 전에 캐릭터가 말을 걸어요.",
+        en: "It pulls train times for the station near the office from the Seoul subway API and picks the train you can still catch if you leave now. On screen a pixel train rolls toward the station, and a little character speaks up before it passes the departure flag.",
+      },
+      {
+        ko: "남은 시간에 따라 말이 바뀝니다. '아직 여유 있어요' → '슬슬 짐 싸야 해요' → '지금 뛰면 가능해요!' → '지금 출발해야 해요!'. 출발할 때가 되면 캐릭터가 깡총 뛰고 LED가 켜지고, 놓치면 '놓쳤어요… 다음 거!' 하고 다음 열차로 넘어갑니다.",
+        en: "The message changes as time runs down: plenty of time → start packing → you can make it if you run → leave now. At go-time the character hops and an LED lights up; miss it and it says so, then moves on to the next train.",
+      },
+      {
+        ko: "실시간 도착정보는 다음 열차 두 대, 4분 앞까지만 보여 줍니다. 역까지 걸어서 10분이면 그 열차는 이미 못 타요. 그래서 시간표로 탈 열차를 고르고, 실시간 정보는 지금 얼마나 늦어지고 있는지 보정하는 데만 씁니다.",
+        en: "Live arrival data only shows the next two trains, about four minutes out — useless when the walk takes ten. So the timetable picks the train, and the live feed is only used to correct for delays.",
+      },
+      {
+        ko: "NU40은 와이파이가 없어서 API 호출과 판단은 PC(파이썬)가 하고, 보드는 받은 상태로 그림을 그리고 남은 시간을 혼자 깎습니다. 퇴근 시간에만 저절로 켜지고, 버튼 하나로 10초 뒤에 켜거나 바로 끌 수 있어요.",
+        en: "The NU40 has no WiFi, so Python on the computer calls the API and makes the decisions, while the board draws the scene and counts down on its own. It switches on only around leaving time, and one button turns it on in ten seconds or off right away.",
+      },
+      {
+        ko: "인증키 없이 돌려 볼 수 있는 촬영용 데모 모드와, 보드 없이 화면만 미리 그려 보는 도구도 같이 들어 있습니다.",
+        en: "There is a demo mode that runs without an API key, and a preview tool that renders the screen without a board.",
+      },
+    ],
+    tags: ["서울 지하철 API", "nRF52840", "OLED", "픽셀 애니메이션"],
+    thumb: "/thumbs/commute-board.jpg",
+    images: ["/thumbs/commute-board.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-10-23",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
