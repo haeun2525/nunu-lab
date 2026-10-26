@@ -380,6 +380,73 @@ export const PROJECTS: Project[] = [
     addedAt: "2026-10-23",
     postedAt: null,
     draft: false,
+  },  {
+    slug: "cat-card",
+    no: 11,
+    repo: "haeun2525/nu40-cat-card",
+    title: { ko: "NU40DK 고양이 명함 키링", en: "NU40DK Cat Business Card Keyring" },
+    tagline: {
+      ko: "흔들면 고양이가 걸어 나와 인사하고, 내 이름과 QR을 띄우는 명함 키링.",
+      en: "Shake it and a little cat walks out, waves, and shows your name and QR code.",
+    },
+    body: [
+      {
+        ko: "가방에 달린 키링을 흔들면 화면이 켜져요. 1비트 고양이가 걸어 나와 \"Hi!\" 하고 인사한 뒤 옆에 앉고, 이름이 한 글자씩 써지고 QR 코드가 내려옵니다. 처음 만난 사람이 폰으로 찍으면 바로 내 링크로 가요.",
+        en: "Shake the keyring on your bag and the screen wakes up. A one-bit cat walks in, says \"Hi!\", sits down, your name types itself out and a QR code slides in. Whoever you just met scans it and lands on your link.",
+      },
+      {
+        ko: "보드에 붙은 움직임 센서가 1초 안에 세 번 흔들렸는지를 봅니다. 그냥 걸을 때 흔들리는 정도로는 안 켜지게 문턱을 맞췄어요. 명함은 30초 동안 떠 있다가 고양이가 엎드려 잠들면서 화면이 꺼지고, 그 사이 또 흔들면 30초가 다시 시작돼요.",
+        en: "The motion sensor on the board checks for three shakes within a second, tuned so ordinary walking doesn't set it off. The card stays up for 30 seconds, then the cat lies down to sleep and the screen goes dark — shake again in the meantime and the timer restarts.",
+      },
+      {
+        ko: "고양이는 기존 그림을 가져오지 않고 파이썬에서 도형으로 직접 그렸어요. 컴퓨터에서 연출을 먼저 미리 보고 보드로 옮기는 식이라, 이름·QR 링크·고양이 모양 모두 몇 줄만 바꾸면 내 명함이 됩니다.",
+        en: "The cat is an original sprite drawn from simple shapes in Python. The whole animation is previewed on the computer first and then exported to the board, so swapping in your own name, QR link or cat takes a few lines.",
+      },
+    ],
+    tags: ["nRF52840", "OLED", "IMU", "픽셀 애니메이션"],
+    thumb: "/thumbs/cat-card.jpg",
+    images: ["/thumbs/cat-card.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-10-26",
+    postedAt: null,
+    draft: false,
+  },
+  {
+    slug: "color-picker",
+    no: 12,
+    repo: "haeun2525/nu40-color-picker",
+    title: { ko: "NU40DK 실물 컬러 피커", en: "NU40DK Real-Life Color Picker" },
+    tagline: {
+      ko: "카메라로 겨눈 곳의 색을 읽어, 동그란 화면을 그 색으로 채우고 색코드를 띄웁니다.",
+      en: "Point the camera at anything and the round screen fills with that color and its hex code.",
+    },
+    body: [
+      {
+        ko: "길에서 본 간판, 나뭇잎, 벽 색을 그대로 색코드로 가져오는 손바닥만 한 스포이드예요. 겨누면 동그란 화면이 그 색으로 가득 차고 가운데에 #RRGGBB가 떠요.",
+        en: "A palm-sized eyedropper for the real world: aim it at a sign, a leaf or a wall and the round screen fills with that color, with its #RRGGBB in the middle.",
+      },
+      {
+        ko: "색센서 대신 작은 카메라를 씁니다. 카메라가 찍은 사진 한 장을 보드가 받아 풀고, 화면 한가운데 부분의 색을 평균 내요. 그래서 갖다 댈 필요 없이 30cm쯤 떨어져서 겨누면 됩니다.",
+        en: "Instead of a color sensor it uses a small camera. The board receives one photo, decodes it and averages the colors in the center. So there's no need to touch the object — just aim from about 30cm away.",
+      },
+      {
+        ko: "카메라 원래 색은 탁하고 빨강에 초록이 섞여 나와서, 기준이 되는 색 다섯 개를 재서 보정값을 맞췄어요. 지금은 빨강을 겨누면 빨강이 나옵니다.",
+        en: "Raw camera colors came out dull, with green bleeding into red, so I measured five reference colors and fit a correction. Now red reads as red.",
+      },
+      {
+        ko: "케이스도 직접 설계해서 3D 프린터로 뽑았어요. 화면은 내 쪽, 렌즈는 반대쪽에 같은 축으로 놓아서 화면 너머로 겨누면 그곳이 읽힙니다. 배터리를 넣어 선 없이 들고 다녀요.",
+        en: "The case is my own design, 3D printed: screen facing you, lens on the opposite side on the same axis, so whatever is behind the screen is what gets read. With a battery inside it goes anywhere, cable-free.",
+      },
+    ],
+    tags: ["nRF52840", "Grove Vision AI V2", "원형 LCD", "3D 프린트"],
+    thumb: "/thumbs/color-picker.jpg",
+    images: ["/thumbs/color-picker.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-10-26",
+    postedAt: null,
+    draft: false,
   },
 ];
 
