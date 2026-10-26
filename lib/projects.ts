@@ -375,10 +375,10 @@ export const PROJECTS: Project[] = [
     tags: ["서울 지하철 API", "nRF52840", "OLED", "픽셀 애니메이션"],
     thumb: "/thumbs/commute-board.jpg",
     images: ["/thumbs/commute-board.jpg"],
-    videoUrl: null,
+    videoUrl: "https://www.instagram.com/p/Deytw5fSpuS/",
     liveUrl: null,
     addedAt: "2026-10-23",
-    postedAt: null,
+    postedAt: "2026-10-23",
     draft: false,
   },  {
     slug: "cat-card",
