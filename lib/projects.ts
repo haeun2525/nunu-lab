@@ -484,6 +484,42 @@ export const PROJECTS: Project[] = [
     postedAt: null,
     draft: false,
   },
+  {
+    slug: "halloween-pumpkin",
+    no: 14,
+    repo: "haeun2525/nu40-halloween-pumpkin",
+    title: { ko: "불꽃 수수께끼 호박", en: "Flame Riddle Pumpkin" },
+    tagline: {
+      ko: "호박 앞에서 라이터를 켜면 깨어나 수수께끼를 내고, 말로 대답하면 사탕을 줄지 저주할지 정하는 할로윈 호박.",
+      en: "A Halloween pumpkin that wakes up when you light a lighter in front of it, asks a riddle, and listens for your spoken answer.",
+    },
+    body: [
+      {
+        ko: "호박 얼굴 앞 10~15cm에서 라이터를 켜면 코 뒤의 불꽃 센서가 알아채고, 지지직 소리와 함께 \"누가 나를 깨웠느냐...\" 하고 일어나요.",
+        en: "Light a lighter 10–15 cm in front of its face and the flame sensor behind the nose notices. It crackles awake with \"Who dares to wake me...\"",
+      },
+      {
+        ko: "입 자리의 화면에 넌센스 수수께끼와 보기 세 개가 뜨고, \"일번·이번·삼번\" 중 하나로 대답하면 돼요. 음성 인식 센서에 이 세 단어를 직접 가르쳐 두었어요.",
+        en: "A nonsense riddle with three choices appears on the screen in its mouth, and you answer by saying \"one, two or three\" in Korean — words I taught the voice recognition sensor myself.",
+      },
+      {
+        ko: "맞히면 \"바구니에서 사탕을 가져가라\", 틀리면 천천히 저주 문장이 찍히고 정답을 알려 준 뒤 다시 잠들어요. 부저는 심장 박동처럼 점점 빨라지며 긴장감을 더해요.",
+        en: "Get it right and it tells you to take a candy from the basket; get it wrong and a curse types out slowly before it reveals the answer and falls back asleep. The buzzer beats like a heart that speeds up while it waits.",
+      },
+      {
+        ko: "케이스는 직접 설계해 주황 몸통, 야광 눈, 검정 꼭지로 나눠 뽑았어요. 화면용 한글 글꼴도 필요한 글자만 골라 직접 만들었어요.",
+        en: "The case is my own design, printed as an orange body, glow-in-the-dark eyes and a black stem. The Korean pixel font on the screen is custom too, with only the letters the riddles need.",
+      },
+    ],
+    tags: ["NU40", "불꽃 센서", "음성 인식", "OLED", "3D 프린트"],
+    thumb: "/thumbs/halloween-pumpkin.jpg",
+    images: ["/thumbs/halloween-pumpkin.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-10-28",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
