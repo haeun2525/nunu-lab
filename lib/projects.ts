@@ -448,6 +448,42 @@ export const PROJECTS: Project[] = [
     postedAt: "2026-10-22",
     draft: false,
   },
+  {
+    slug: "desk-penguin",
+    no: 13,
+    repo: "haeun2525/nu87-desk-penguin",
+    title: { ko: "NU87 데스크 펭귄", en: "NU87 Desk Penguin" },
+    tagline: {
+      ko: "맥북 위에서 자다가, 카톡·메일이 오면 깨서 누구한테 왔는지 알려 주는 펭귄.",
+      en: "A penguin that naps on top of your MacBook and wakes up to tell you who just messaged you.",
+    },
+    body: [
+      {
+        ko: "노트북 화면 위에 걸어 두는 작은 펭귄이에요. 평소엔 눈을 감고 조용히 자요. 깜빡이는 얼굴은 일할 때 눈에 걸려서, 일부러 잠든 채로 두었어요.",
+        en: "A little penguin that clips onto your laptop screen. Most of the time it just sleeps — a blinking face turned out to be distracting at work, so it stays quiet on purpose.",
+      },
+      {
+        ko: "카톡이나 메일이 오면 놀란 얼굴로 깨서 보낸 사람 이름을 띄우고, 이어서 메시지 내용을 보여 줘요. 메일 주소처럼 긴 이름은 옆으로 흘러가며 다 보여 줍니다.",
+        en: "When a KakaoTalk message or an email arrives it wakes up surprised, shows the sender's name and then the message itself. Long names like email addresses scroll sideways so you see all of it.",
+      },
+      {
+        ko: "알림 말고도 유튜브에서 듣는 노래 제목, 날씨와 비 오기 전 우산, 다음 일정, 50분마다 스트레칭, Claude 작업이 끝났을 때까지 알려 줘요.",
+        en: "Besides notifications it shows the song playing on YouTube, the weather and an umbrella warning before rain, your next calendar event, a stretch reminder every 50 minutes, and when a Claude task finishes.",
+      },
+      {
+        ko: "보드에는 한글 글꼴이 없어서, 맥에서 이름과 내용을 그림으로 그려 USB로 보내요. 보드는 받은 그림과 얼굴만 그립니다. 케이스는 직접 설계해 3색으로 뽑아 붙였어요.",
+        en: "The board has no Korean font, so the Mac renders names and messages as images and sends them over USB; the board only draws the pictures and the face. The case is my own design, printed in three colors and glued together.",
+      },
+    ],
+    tags: ["RTL8720DF", "OLED", "맥 알림", "3D 프린트"],
+    thumb: "/thumbs/desk-penguin.jpg",
+    images: ["/thumbs/desk-penguin.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-10-28",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
