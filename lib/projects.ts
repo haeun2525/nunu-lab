@@ -520,6 +520,42 @@ export const PROJECTS: Project[] = [
     postedAt: null,
     draft: false,
   },
+  {
+    slug: "sky-radar",
+    no: 15,
+    repo: "haeun2525/nu40-sky-radar",
+    title: { ko: "NU40DK 머리 위 비행기 레이더", en: "NU40DK Overhead Flight Radar" },
+    tagline: {
+      ko: "지금 내 머리 위를 지나는 비행기를 원형 화면에 실시간으로 띄우는 책상 위 레이더.",
+      en: "A desk radar that shows the planes flying over you right now on a round screen.",
+    },
+    body: [
+      {
+        ko: "비행기가 내보내는 위치 신호(ADS-B)를 모아 공개하는 adsb.lol에서 내 위치 반경 60km 안의 비행기를 5초마다 받아 와요. 키 없이 쓸 수 있는 공개 데이터예요.",
+        en: "Every five seconds it pulls the aircraft within 60 km of you from adsb.lol, which collects and publishes the position signals (ADS-B) planes broadcast. It's open data — no API key needed.",
+      },
+      {
+        ko: "가운데가 내 위치이고, 비행기 아이콘은 날아가는 방향을 향해요. 가장 가까운 한 대는 분홍색으로 편명과 고도를, 낮게 나는 비행기는 주황색으로 보여 줘요.",
+        en: "You're at the center, and each plane icon points the way it's flying. The closest one turns pink with its flight number and altitude, and low-flying planes show up in orange.",
+      },
+      {
+        ko: "몇 초마다 가장 가까운 비행기의 편명·기종·노선·고도·거리를 크게 보여 주고, 주변에 비행기가 없으면 시계 화면으로 바뀝니다. 위아래엔 늘 시간과 내 위도·경도가 떠 있어요.",
+        en: "Every so often it switches to a close-up of the nearest flight — number, aircraft type, route, altitude and distance — and falls back to a clock when the sky is empty. Time and your latitude/longitude stay on screen throughout.",
+      },
+      {
+        ko: "NU40은 와이파이가 없어서 데이터는 맥(파이썬)이 받아 USB로 보내고, 보드는 그 사이 비행기 속도와 방향으로 위치를 계산해 부드럽게 움직여요. 글꼴 색은 실제 조종석 화면처럼 시안·마젠타를 썼어요.",
+        en: "The NU40 has no WiFi, so Python on the Mac fetches the data and sends it over USB; in between updates the board moves each plane along using its speed and heading. The colors borrow from real cockpit displays: cyan and magenta.",
+      },
+    ],
+    tags: ["ADS-B", "adsb.lol", "nRF52840", "GC9A01", "원형 디스플레이"],
+    thumb: "/thumbs/sky-radar.jpg",
+    images: ["/thumbs/sky-radar.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-11-06",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
