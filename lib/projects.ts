@@ -556,6 +556,38 @@ export const PROJECTS: Project[] = [
     postedAt: null,
     draft: false,
   },
+  {
+    slug: "pepero-touch",
+    no: 16,
+    repo: "haeun2525/nu40-pepero-touch",
+    title: { ko: "NU40DK 빼빼로 터치", en: "NU40DK Pepero Touch" },
+    tagline: {
+      ko: "보드 두 개를 맞대면 화면 속 빼빼로가 건너가 나란히 서는 빼빼로데이 장난감.",
+      en: "Touch two boards together and the Pepero stick hops over to stand beside the other one.",
+    },
+    body: [
+      {
+        ko: "NU40DK 두 대에 각각 작은 OLED 화면을 달고, 화면마다 세로 빼빼로를 하나씩 띄웠어요. 두 보드를 가까이 가져갈수록 빼빼로가 서로 쪽으로 다가갑니다.",
+        en: "Each of two NU40DKs has a small OLED showing one Pepero stick. As you bring the boards closer, the sticks lean toward each other.",
+      },
+      {
+        ko: "딱 맞대면 한쪽 빼빼로가 화면 밖으로 빠져나가 \"HAPPY PEPERO DAY!\"가 뜨고, 다른 쪽 화면으로 들어와 나란히 서면서 하트가 떠요. 맞댄 횟수도 세어 줍니다.",
+        en: "Touch them and one stick slides off its screen — \"HAPPY PEPERO DAY!\" — then appears on the other screen, standing side by side with a heart. It counts how many times you've touched.",
+      },
+      {
+        ko: "선도 앱도 없이 블루투스 신호 세기만으로 거리를 재요. 두 보드가 서로 신호를 보내고 듣다가, 신호가 아주 세지면 맞닿았다고 판단합니다. 어느 쪽이 보내는 쪽인지는 칩 고유번호로 알아서 정해요.",
+        en: "No wires, no app — distance comes from Bluetooth signal strength alone. Both boards broadcast and listen, and a very strong signal means they're touching. Which one sends is decided automatically from the chip ID.",
+      },
+    ],
+    tags: ["BLE", "RSSI", "nRF52840", "SSD1306", "빼빼로데이"],
+    thumb: "/thumbs/pepero-touch.jpg",
+    images: ["/thumbs/pepero-touch.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-11-06",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
