@@ -588,6 +588,46 @@ export const PROJECTS: Project[] = [
     postedAt: null,
     draft: false,
   },
+  {
+    slug: "iss-tracker",
+    no: 17,
+    repo: "haeun2525/nu40-iss-tracker",
+    title: { ko: "NU40DK ISS 트래커", en: "NU40DK ISS Tracker" },
+    tagline: {
+      ko: "ISS·톈궁·스타링크가 지금 어디 있고 언제 내 머리 위로 지나가는지 원형 화면에 띄우는 우주 관제 화면.",
+      en: "A desk mission-control screen showing where the ISS, Tiangong and Starlink are, and when they pass over you.",
+    },
+    body: [
+      {
+        ko: "ISS 위치는 wheretheiss.at에서 5초마다, 궤도값은 CelesTrak에서, 우주에 있는 사람 명단은 Launch Library 2에서 받아요. 모두 키 없이 쓰는 공개 데이터예요.",
+        en: "ISS position comes from wheretheiss.at every five seconds, orbital elements from CelesTrak, and the list of people in space from Launch Library 2 — all open data, no API keys.",
+      },
+      {
+        ko: "ISS를 가운데 둔 지구가 돌고, 낮과 밤·밤쪽 도시 불빛·지나온 길과 갈 길이 보여요. 속도는 '1초에 7.7km'처럼 감이 오게 풀어서 보여 줘요.",
+        en: "The Earth turns beneath the ISS with day and night, city lights on the dark side, and its past and upcoming ground track. Speed is also shown as '7.7 km every second' so it actually lands.",
+      },
+      {
+        ko: "ISS와 톈궁 중 먼저 오는 쪽이 내 하늘을 지나갈 길을 그리고 '톈궁이 서울 하늘에 오기까지 1시간 1분'처럼 남은 시간을 띄워요. 지나가는 동안엔 볼 방향을 알려 줘요.",
+        en: "Whichever of the ISS and Tiangong comes first gets its path drawn across your sky with a countdown, and while it passes the screen tells you which way to look.",
+      },
+      {
+        ko: "스타링크 1만여 개가 지구 둘레를 도는 화면과, 지금 내 하늘 위에 떠 있는 스타링크만 찍은 화면도 있어요. 가장 최근 발사된 무리는 분홍으로 빛나요.",
+        en: "Two more screens show the whole Starlink swarm of 10,000+ satellites circling the Earth and just the ones above your horizon right now, with the newest launch batch glowing pink.",
+      },
+      {
+        ko: "NU40은 와이파이가 없어서 맥(파이썬)이 데이터를 받아 USB로 보내고, 보드는 그 사이를 원궤도로 계산해 부드럽게 움직여요. 한글은 화면에 쓰는 글자만 골라 글꼴로 만들어 넣었어요.",
+        en: "The NU40 has no WiFi, so Python on the Mac fetches the data and sends it over USB while the board fills in the motion with a circular-orbit model. Korean text uses a font built from only the characters on screen.",
+      },
+    ],
+    tags: ["ISS", "스타링크", "CelesTrak", "nRF52840", "GC9A01", "원형 디스플레이"],
+    thumb: "/thumbs/iss-tracker.jpg",
+    images: ["/thumbs/iss-tracker.jpg"],
+    videoUrl: null,
+    liveUrl: null,
+    addedAt: "2026-11-06",
+    postedAt: null,
+    draft: false,
+  },
 ];
 
 /** 저장소에 올린 지 7일 이내인가. 갤러리 NEW 뱃지 판정용. */
